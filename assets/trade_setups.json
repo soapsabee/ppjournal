@@ -1,0 +1,14 @@
+[
+    {
+        "name": "Breakout",
+        "detail": "Enter when price breaks support/resistance"
+    },
+    {
+        "name": "Pullback",
+        "detail": "Enter on retracement in trend"
+    },
+    {
+        "name": "Reversal",
+        "detail": "Enter after confirmation of trend change"
+    }
+]
