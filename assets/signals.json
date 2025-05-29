@@ -1,0 +1,22 @@
+[
+  {
+    "name": "Buy Signal",
+    "detail": "Indicates a potential upward movement in price based on technical indicators."
+  },
+  {
+    "name": "Sell Signal",
+    "detail": "Indicates a potential downward movement in price based on technical analysis."
+  },
+  {
+    "name": "Overbought",
+    "detail": "Suggests that the asset may be overvalued and a price decline could be coming."
+  },
+  {
+    "name": "Oversold",
+    "detail": "Suggests that the asset may be undervalued and a price increase could be coming."
+  },
+  {
+    "name": "MACD Crossover",
+    "detail": "A signal generated when the MACD line crosses above or below the signal line."
+  }
+]

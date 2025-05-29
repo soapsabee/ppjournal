@@ -1,0 +1,30 @@
+[
+  {
+    "name": "EUR/USD",
+    "detail": "Euro vs US Dollar – the most traded currency pair in the world."
+  },
+  {
+    "name": "USD/JPY",
+    "detail": "US Dollar vs Japanese Yen – known for its liquidity and low spreads."
+  },
+  {
+    "name": "GBP/USD",
+    "detail": "British Pound vs US Dollar – also called 'Cable', often volatile."
+  },
+  {
+    "name": "USD/CHF",
+    "detail": "US Dollar vs Swiss Franc – considered a safe-haven currency pair."
+  },
+  {
+    "name": "AUD/USD",
+    "detail": "Australian Dollar vs US Dollar – influenced by commodity prices."
+  },
+  {
+    "name": "USD/CAD",
+    "detail": "US Dollar vs Canadian Dollar – often affected by oil price movements."
+  },
+  {
+    "name": "NZD/USD",
+    "detail": "New Zealand Dollar vs US Dollar – reflects agricultural and commodity exports."
+  }
+]

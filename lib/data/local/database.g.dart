@@ -3317,6 +3317,359 @@ class NoteCompanion extends UpdateCompanion<NoteData> {
   }
 }
 
+class $CurrencyPairsTable extends CurrencyPairs
+    with TableInfo<$CurrencyPairsTable, CurrencyPair> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CurrencyPairsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _detailMeta = const VerificationMeta('detail');
+  @override
+  late final GeneratedColumn<String> detail = GeneratedColumn<String>(
+    'detail',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    detail,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'currency_pairs';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<CurrencyPair> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('detail')) {
+      context.handle(
+        _detailMeta,
+        detail.isAcceptableOrUnknown(data['detail']!, _detailMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_detailMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  CurrencyPair map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CurrencyPair(
+      id:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}id'],
+          )!,
+      name:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}name'],
+          )!,
+      detail:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}detail'],
+          )!,
+      createdAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}created_at'],
+          )!,
+      updatedAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}updated_at'],
+          )!,
+    );
+  }
+
+  @override
+  $CurrencyPairsTable createAlias(String alias) {
+    return $CurrencyPairsTable(attachedDatabase, alias);
+  }
+}
+
+class CurrencyPair extends DataClass implements Insertable<CurrencyPair> {
+  final int id;
+  final String name;
+  final String detail;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const CurrencyPair({
+    required this.id,
+    required this.name,
+    required this.detail,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    map['detail'] = Variable<String>(detail);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  CurrencyPairsCompanion toCompanion(bool nullToAbsent) {
+    return CurrencyPairsCompanion(
+      id: Value(id),
+      name: Value(name),
+      detail: Value(detail),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory CurrencyPair.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CurrencyPair(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      detail: serializer.fromJson<String>(json['detail']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'detail': serializer.toJson<String>(detail),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  CurrencyPair copyWith({
+    int? id,
+    String? name,
+    String? detail,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => CurrencyPair(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    detail: detail ?? this.detail,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  CurrencyPair copyWithCompanion(CurrencyPairsCompanion data) {
+    return CurrencyPair(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      detail: data.detail.present ? data.detail.value : this.detail,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CurrencyPair(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('detail: $detail, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, name, detail, createdAt, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CurrencyPair &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.detail == this.detail &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class CurrencyPairsCompanion extends UpdateCompanion<CurrencyPair> {
+  final Value<int> id;
+  final Value<String> name;
+  final Value<String> detail;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  const CurrencyPairsCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.detail = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  CurrencyPairsCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+    required String detail,
+    required DateTime createdAt,
+    required DateTime updatedAt,
+  }) : name = Value(name),
+       detail = Value(detail),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<CurrencyPair> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+    Expression<String>? detail,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (detail != null) 'detail': detail,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  CurrencyPairsCompanion copyWith({
+    Value<int>? id,
+    Value<String>? name,
+    Value<String>? detail,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+  }) {
+    return CurrencyPairsCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      detail: detail ?? this.detail,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (detail.present) {
+      map['detail'] = Variable<String>(detail.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CurrencyPairsCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('detail: $detail, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -3327,6 +3680,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $SignalTable signal = $SignalTable(this);
   late final $PricePatternTable pricePattern = $PricePatternTable(this);
   late final $NoteTable note = $NoteTable(this);
+  late final $CurrencyPairsTable currencyPairs = $CurrencyPairsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -3339,6 +3693,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     signal,
     pricePattern,
     note,
+    currencyPairs,
   ];
 }
 
@@ -5034,6 +5389,211 @@ typedef $$NoteTableProcessedTableManager =
       NoteData,
       PrefetchHooks Function()
     >;
+typedef $$CurrencyPairsTableCreateCompanionBuilder =
+    CurrencyPairsCompanion Function({
+      Value<int> id,
+      required String name,
+      required String detail,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+    });
+typedef $$CurrencyPairsTableUpdateCompanionBuilder =
+    CurrencyPairsCompanion Function({
+      Value<int> id,
+      Value<String> name,
+      Value<String> detail,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+    });
+
+class $$CurrencyPairsTableFilterComposer
+    extends Composer<_$AppDatabase, $CurrencyPairsTable> {
+  $$CurrencyPairsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get detail => $composableBuilder(
+    column: $table.detail,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$CurrencyPairsTableOrderingComposer
+    extends Composer<_$AppDatabase, $CurrencyPairsTable> {
+  $$CurrencyPairsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get detail => $composableBuilder(
+    column: $table.detail,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$CurrencyPairsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $CurrencyPairsTable> {
+  $$CurrencyPairsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get detail =>
+      $composableBuilder(column: $table.detail, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$CurrencyPairsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $CurrencyPairsTable,
+          CurrencyPair,
+          $$CurrencyPairsTableFilterComposer,
+          $$CurrencyPairsTableOrderingComposer,
+          $$CurrencyPairsTableAnnotationComposer,
+          $$CurrencyPairsTableCreateCompanionBuilder,
+          $$CurrencyPairsTableUpdateCompanionBuilder,
+          (
+            CurrencyPair,
+            BaseReferences<_$AppDatabase, $CurrencyPairsTable, CurrencyPair>,
+          ),
+          CurrencyPair,
+          PrefetchHooks Function()
+        > {
+  $$CurrencyPairsTableTableManager(_$AppDatabase db, $CurrencyPairsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer:
+              () => $$CurrencyPairsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer:
+              () =>
+                  $$CurrencyPairsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer:
+              () => $$CurrencyPairsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> detail = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+              }) => CurrencyPairsCompanion(
+                id: id,
+                name: name,
+                detail: detail,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String name,
+                required String detail,
+                required DateTime createdAt,
+                required DateTime updatedAt,
+              }) => CurrencyPairsCompanion.insert(
+                id: id,
+                name: name,
+                detail: detail,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+              ),
+          withReferenceMapper:
+              (p0) =>
+                  p0
+                      .map(
+                        (e) => (
+                          e.readTable(table),
+                          BaseReferences(db, table, e),
+                        ),
+                      )
+                      .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$CurrencyPairsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $CurrencyPairsTable,
+      CurrencyPair,
+      $$CurrencyPairsTableFilterComposer,
+      $$CurrencyPairsTableOrderingComposer,
+      $$CurrencyPairsTableAnnotationComposer,
+      $$CurrencyPairsTableCreateCompanionBuilder,
+      $$CurrencyPairsTableUpdateCompanionBuilder,
+      (
+        CurrencyPair,
+        BaseReferences<_$AppDatabase, $CurrencyPairsTable, CurrencyPair>,
+      ),
+      CurrencyPair,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -5049,4 +5609,6 @@ class $AppDatabaseManager {
   $$PricePatternTableTableManager get pricePattern =>
       $$PricePatternTableTableManager(_db, _db.pricePattern);
   $$NoteTableTableManager get note => $$NoteTableTableManager(_db, _db.note);
+  $$CurrencyPairsTableTableManager get currencyPairs =>
+      $$CurrencyPairsTableTableManager(_db, _db.currencyPairs);
 }

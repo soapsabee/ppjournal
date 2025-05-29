@@ -1,0 +1,14 @@
+[
+  {
+    "name": "POI 1",
+    "detail": "This is the first point of interest"
+  },
+  {
+    "name": "POI 2",
+    "detail": "This is the second point of interest"
+  },
+  {
+    "name": "POI 3",
+    "detail": "This is the third point of interest"
+  }
+]

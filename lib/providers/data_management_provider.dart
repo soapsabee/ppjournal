@@ -5,9 +5,9 @@ import 'package:ppjournal/data/repositories/trade_setup_repository.dart';
 import 'package:ppjournal/services/data_management_service.dart';
 
 
-final dbProvider = Provider<AppDatabase>((ref) {
+final dbProvider = Provider<AppDatabase>((ref)  {
    final db = AppDatabase();
-    db.insertTradeSetupsFromJson();
+   db.insertDataPrepared();
   return db;
 });
 
