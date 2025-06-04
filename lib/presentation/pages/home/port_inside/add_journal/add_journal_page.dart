@@ -1,23 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ppjournal/data/local/database.dart';
 import 'package:ppjournal/presentation/widgets/appbar_custom.dart';
+import 'package:ppjournal/providers/data_management_provider.dart';
 
-class AddJournalPage extends StatefulWidget {
-  const AddJournalPage({Key? key}) : super(key: key);
-
+class AddJournalPage extends ConsumerStatefulWidget {
   @override
   _AddJournalPageState createState() => _AddJournalPageState();
 }
 
-class _AddJournalPageState extends State<AddJournalPage> {
+class _AddJournalPageState extends ConsumerState<AddJournalPage> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _titleController = TextEditingController();
-  final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _riskRewardRatioController = TextEditingController();
+  final TextEditingController _feeController = TextEditingController();
+  final TextEditingController _profitController = TextEditingController();
   final TextEditingController _tradeDateController = TextEditingController();
 
   @override
   void dispose() {
-    _titleController.dispose();
-    _descriptionController.dispose();
+    _riskRewardRatioController.dispose();
+    _feeController.dispose();
+    _profitController.dispose();
     _tradeDateController.dispose();
     super.dispose();
   }
@@ -33,6 +36,12 @@ class _AddJournalPageState extends State<AddJournalPage> {
 
   @override
   Widget build(BuildContext context) {
+    final currencyPairs = ref.watch(dataManagementListProvider("Pair"));
+    final setups = ref.watch(dataManagementListProvider("Setup"));
+    final pois = ref.watch(dataManagementListProvider("POI"));
+    final signals = ref.watch(dataManagementListProvider("Signal"));
+    final pricePatterns = ref.watch(dataManagementListProvider("Price Pattern"));
+
     return Scaffold(
       appBar: CustomAppBar(
         title: 'Add Journal',
@@ -68,17 +77,37 @@ class _AddJournalPageState extends State<AddJournalPage> {
             const SizedBox(height: 16.0),
             _buildDropdownField('Session Time', ['Morning', 'Afternoon', 'Evening']),
             const SizedBox(height: 16.0),
-            _buildDropdownField('Pair', ['BTC/USD', 'ETH/USD']),
+            _buildDropdownField('Pair', currencyPairs.when(
+              data: (data) => data.map((pair) => pair.name as String).toList(),
+              loading: () => ['Loading...'],
+              error: (error, stack) => ['Error loading pairs'],
+            )),
             const SizedBox(height: 16.0),
-            _buildDropdownField('Setup', ['xxxxxx', 'xxxxxxx']),
+            _buildDropdownField('Setup', setups.when(
+              data: (data) => data.map((setup) => setup.name as String).toList(),
+              loading: () => ['Loading...'],
+              error: (error, stack) => ['Error loading setups'],
+            )),
             const SizedBox(height: 16.0),
-            _buildDropdownField('POI', ['xxxxxx', 'xxxxxxx']),
+            _buildDropdownField('POI', pois.when(
+              data: (data) => data.map((poi) => poi.name as String).toList(),
+              loading: () => ['Loading...'],
+              error: (error, stack) => ['Error loading POIs'],
+            )),
             const SizedBox(height: 16.0),
-            _buildDropdownField('Signal', ['xxxxxx', 'xxxxxxx']),
+            _buildDropdownField('Signal', signals.when(
+              data: (data) => data.map((signal) => signal.name as String).toList(),
+              loading: () => ['Loading...'],
+              error: (error, stack) => ['Error loading signals'],
+            )),
             const SizedBox(height: 16.0),
             _buildSectionTitle('Trade Analysis'),
             const SizedBox(height: 8.0),
-            _buildDropdownField('Price Pattern', ['Pattern 1', 'Pattern 2', 'Pattern 3']),
+            _buildDropdownField('Price Pattern', pricePatterns.when(
+              data: (data) => data.map((pattern) => pattern.name as String).toList(),
+              loading: () => ['Loading...'],
+              error: (error, stack) => ['Error loading patterns'],
+            )),
             const SizedBox(height: 16.0),
             _buildDropdownField('Time Frame', ['1H', '4H', '1D']),
             const SizedBox(height: 16.0),
@@ -88,11 +117,11 @@ class _AddJournalPageState extends State<AddJournalPage> {
             const SizedBox(height: 16.0),
             _buildSectionTitle('Trade Metrics'),
             const SizedBox(height: 8.0),
-            _buildTextField('RR', _titleController),
+            _buildTextField('RR', _riskRewardRatioController),
             const SizedBox(height: 16.0),
-            _buildTextField('Fee', _descriptionController),
+            _buildTextField('Fee', _feeController),
             const SizedBox(height: 16.0),
-            _buildTextField('Profit', _descriptionController),
+            _buildTextField('Profit', _profitController),
             const SizedBox(height: 16.0),
           ],
         ),
@@ -125,12 +154,14 @@ class _AddJournalPageState extends State<AddJournalPage> {
     );
   }
   _buildDropdownField(String label, List<String> items) {
+      final List<String> dropdownItems = ['-- N/A --', ...items];
+
     return DropdownButtonFormField<String>(
       decoration: InputDecoration(
         labelText: label,
         border: const OutlineInputBorder(),
       ),
-      items: items.map((String item) {
+      items: dropdownItems.map((String item) {
         return DropdownMenuItem<String>(
           value: item,
           child: Text(item),
