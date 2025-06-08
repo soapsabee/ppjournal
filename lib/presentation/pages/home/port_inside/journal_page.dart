@@ -1,7 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ppjournal/data/local/database.dart';
+import 'package:ppjournal/data/models/journal_model.dart';
 import 'package:ppjournal/presentation/colors/colors.dart';
+import 'package:ppjournal/providers/journal_provider.dart';
 
-class JournalPage extends StatelessWidget {
+class JournalPage extends ConsumerStatefulWidget {
+  @override
+  _JournalPageState createState() => _JournalPageState();
+}
+
+class _JournalPageState extends ConsumerState<JournalPage> {
   final List<Map<String, String>> journalEntries = [
     {
       "Date": "2023-10-01",
@@ -62,6 +71,8 @@ class JournalPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final journalAsyncValue = ref.watch(journalListProvider);
+
     return Column(
       children: [
         Row(
@@ -74,162 +85,97 @@ class JournalPage extends StatelessWidget {
             IconButton(
               icon: Icon(Icons.filter_list),
               onPressed: () {
-                // Add your action here
+                // Add filter logic
               },
             ),
           ],
         ),
         Expanded(
-          child: ListView.builder(
-            padding: EdgeInsets.all(5.0),
-            itemCount: journalEntries.length,
-            itemBuilder: (context, index) {
-              final entry = journalEntries[index];
-              return Card(
-                color: AppColors.primary,
-                margin: EdgeInsets.all(8.0),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10.0),
-                ),
-
-                elevation: 4.0,
-                child: Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-
-                    children: [
-                      Row(
-                        spacing: 10,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "Date : ${entry['Date']}",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.onPrimary,
-                            ),
-                          ),
-                          Text(
-                            "${entry['Session']}",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.onPrimary,
-                            ),
-                          ),
-                          Text(
-                            "Pair : ${entry['Pair']}",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.onPrimary,
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 10),
-                      Divider(color: Colors.grey, height: 1),
-                      SizedBox(height: 10),
-
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        spacing: 5,
-                        children: [
-                          Text(
-                            "Setup : ${entry['Setup']}",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.onPrimary,
-                            ),
-                          ),
-                          Text(
-                            "POI : ${entry['POI']}",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.onPrimary,
-                            ),
-                          ),
-                          Text(
-                            "Price Pattern : ${entry['Price Pattern']}",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.onPrimary,
-                            ),
-                          ),
-                          Text(
-                            "Win Loss : Win",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.onPrimary,
-                            ),
-                          ),
-                            Text(
-                            "RR : 1.2",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.onPrimary,
-                            ),
-                          ),
-                          Text(
-                            "Profit : 1,000",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.onPrimary,
-                            ),
-                          ),
-                           Text(
-                            "Fee : 100",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.onPrimary,
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 10),
-                      Divider(color: Colors.grey, height: 1),
-                      SizedBox(height: 10),
-                      Row(
-                        spacing: 10,
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          IconButton(onPressed: () => {}, icon: Icon(Icons.note), color: AppColors.onPrimary,),
-                          IconButton(onPressed: () => {}, icon: Icon(Icons.edit),color: AppColors.onPrimary,),
-                          Text(
-                            "TF : ${entry['TimeFrame']}",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.onPrimary,
-                            ),
-                          ),
-                          Text(
-                            "Position : ${entry['Position']}",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.onPrimary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
+          child: journalAsyncValue.when(
+            data: (journalList) {
+              if (journalList.isEmpty) {
+                return Center(child: Text("No journal entries found."));
+              }
+              return ListView.builder(
+                padding: EdgeInsets.all(5.0),
+                itemCount: journalList.length,
+                itemBuilder: (context, index) {
+                  final entry = journalList[index];
+                  return _buildJournalCard(entry); // <== move card to a method
+                },
               );
             },
+            loading: () => Center(child: CircularProgressIndicator()),
+            error: (err, stack) => Center(child: Text('Error: $err')),
           ),
         ),
       ],
     );
   }
+
+  Widget _buildJournalCard(JournalFull entry) {
+    return Card(
+      color: AppColors.primary,
+      margin: EdgeInsets.all(8.0),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+      elevation: 4.0,
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text("Date : ${entry.journal.date}", style: _style()),
+                Text("${entry.journal.session}", style: _style()),
+                Text("Pair : ${entry.pair.name}", style: _style()),
+              ],
+            ),
+            SizedBox(height: 10),
+            Divider(color: Colors.grey, height: 1),
+            SizedBox(height: 10),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("Setup : ${entry.setup.name}", style: _style()),
+                Text("POI : ${entry.poi.name}", style: _style()),
+                Text("Price Pattern : ${entry.pricePattern.name}", style: _style()),
+                Text("Win Loss : ${entry.journal.winLose}", style: _style()),
+                Text("RR : ${entry.journal.riskRewardRatio}", style: _style()),
+                Text("Profit : ${entry.journal.profit}", style: _style()),
+                Text("Fee : ${entry.journal.fee}", style: _style()),
+              ],
+            ),
+            SizedBox(height: 10),
+            Divider(color: Colors.grey, height: 1),
+            SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                IconButton(
+                  onPressed: () => {},
+                  icon: Icon(Icons.note),
+                  color: AppColors.onPrimary,
+                ),
+                IconButton(
+                  onPressed: () => {},
+                  icon: Icon(Icons.edit),
+                  color: AppColors.onPrimary,
+                ),
+                Text("TF : ${entry.journal.timeFrame}", style: _style()),
+                Text("Position : ${entry.journal.position}", style: _style()),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  TextStyle _style() => TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.bold,
+    color: AppColors.onPrimary,
+  );
 }
