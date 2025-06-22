@@ -16,6 +16,10 @@ class JournalService {
     return await journalRepository.getAllJournals();
   }
 
+  Future<JournalFull?> getJournalById(int id) async {
+    return await journalRepository.getJournalById(id);
+  }
+
   Future<int> insertJournal(JournalCompanion data) async {
     return await journalRepository.insertJournal(data);
   }

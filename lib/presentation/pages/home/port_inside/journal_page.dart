@@ -114,6 +114,11 @@ class _JournalPageState extends ConsumerState<JournalPage> {
   }
 
   Widget _buildJournalCard(JournalFull entry) {
+    print("journal entry: ${entry.journal.id}");
+    final date = entry.journal.date;
+     String formattedDate = "${date.year.toString().padLeft(4, '0')}-"
+                     "${date.month.toString().padLeft(2, '0')}-"
+                     "${date.day.toString().padLeft(2, '0')}";
     return Card(
       color: AppColors.primary,
       margin: EdgeInsets.all(8.0),
@@ -127,7 +132,7 @@ class _JournalPageState extends ConsumerState<JournalPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text("Date : ${entry.journal.date}", style: _style()),
+                Text("Date : ${formattedDate}", style: _style()),
                 Text("${entry.journal.session}", style: _style()),
                 Text("Pair : ${entry.pair.name}", style: _style()),
               ],
@@ -154,16 +159,28 @@ class _JournalPageState extends ConsumerState<JournalPage> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 IconButton(
-                  onPressed: () => {},
+                  onPressed: () => {
+                    Navigator.pushNamed(
+                      context,
+                      '/note-journal-page',
+                      arguments: entry.journal.noteId,
+                    )
+                  },
                   icon: Icon(Icons.note),
                   color: AppColors.onPrimary,
                 ),
                 IconButton(
-                  onPressed: () => {},
+                  onPressed: () => {
+                    Navigator.pushNamed(
+                      context,
+                      '/add-journal-page',
+                      arguments: entry.journal.id,
+                    )
+                  },
                   icon: Icon(Icons.edit),
                   color: AppColors.onPrimary,
                 ),
-                Text("TF : ${entry.journal.timeFrame}", style: _style()),
+                Text("TF : ${entry.journal.timeFrame} ", style: _style()),
                 Text("Position : ${entry.journal.position}", style: _style()),
               ],
             ),

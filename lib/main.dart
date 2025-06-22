@@ -32,9 +32,9 @@ class MyApp extends StatelessWidget {
           case '/create-port-page':
             return MaterialPageRoute(builder: (context) => CreatePortPage());
           case '/add-journal-page':
-            return MaterialPageRoute(builder: (context) => AddJournalPage());
+            return MaterialPageRoute(builder: (context) => AddJournalPage(), settings: settings);
           case '/note-journal-page':
-          return  MaterialPageRoute(builder: (context) => NoteJournalPage());
+          return  MaterialPageRoute(builder: (context) => NoteJournalPage(), settings: settings);
           case '/management-page':
             return MaterialPageRoute(builder: (context) => ManagementPage(), settings: settings);
           default:

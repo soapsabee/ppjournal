@@ -45,6 +45,8 @@ class _AddJournalPageState extends ConsumerState<AddJournalPage> {
   String? selectedTimeFrame;
   String? selectedPosition;
   String? selectedWinLoss;
+  DateTime? createdAt;
+  bool _isInitialized = false;
 
   @override
   void dispose() {
@@ -55,7 +57,7 @@ class _AddJournalPageState extends ConsumerState<AddJournalPage> {
     super.dispose();
   }
 
-  void _saveJournal() {
+  void _saveJournal(int? journalId) {
     if (_formKey.currentState!.validate()) {
       final double rr = double.tryParse(_riskRewardRatioController.text) ?? 0.0;
       final double fee = double.tryParse(_feeController.text) ?? 0.0;
@@ -74,25 +76,54 @@ class _AddJournalPageState extends ConsumerState<AddJournalPage> {
 
       DateTime? tradeDate = getSelectedTradeDate();
 
-      insert.insertJournal(
-        JournalCompanion(
-          date: drift.Value(tradeDate ?? DateTime.now()),
-          session: drift.Value(selectedSessionTime ?? ''),
-          pairId: drift.Value(selectedPair?.id ?? 0),
-          tradeSetupId: drift.Value(selectedSetup?.id ?? 0),
-          poiId: drift.Value(selectedPoi?.id ?? 0),
-          signalId: drift.Value(selectedSignal?.id ?? 0),
-          pricePatternId: drift.Value(selectedPricePattern?.id ?? 0),
-          timeFrame: drift.Value(selectedTimeFrame ?? ''),
-          position: drift.Value(selectedPosition ?? ''),
-          winLose: drift.Value(selectedWinLoss ?? ''),
-          riskRewardRatio: drift.Value(rr),
-          fee: drift.Value(fee),
-          profit: drift.Value(profit),
-          createdAt: drift.Value(DateTime.now()),
-          updatedAt: drift.Value(DateTime.now()),
-        ),
-      );
+      if (journalId != null) {
+        // Update existing journal entry
+        print('Updating journal with ID: $journalId');
+
+        final update = ref.watch(journalServiceProvider);
+        final result = update.updateJournal(
+          JournalData(
+            id: journalId,
+            date: tradeDate ?? DateTime.now(),
+            session: selectedSessionTime ?? '',
+            pairId: selectedPair?.id ?? 0,
+            tradeSetupId: selectedSetup?.id ?? 0,
+            poiId: selectedPoi?.id ?? 0,
+            signalId: selectedSignal?.id ?? 0,
+            pricePatternId: selectedPricePattern?.id ?? 0,
+            timeFrame: selectedTimeFrame ?? '',
+            position: selectedPosition ?? '',
+            winLose: selectedWinLoss ?? '',
+            riskRewardRatio: rr,
+            fee: fee,
+            profit: profit,
+            createdAt: createdAt != null ? createdAt! : DateTime.now(),
+            updatedAt: DateTime.now(),
+          ),
+        );
+      } else {
+        // Insert new journal entry
+        insert.insertJournal(
+          JournalCompanion(
+            date: drift.Value(tradeDate ?? DateTime.now()),
+            session: drift.Value(selectedSessionTime ?? ''),
+            pairId: drift.Value(selectedPair?.id ?? 0),
+            tradeSetupId: drift.Value(selectedSetup?.id ?? 0),
+            poiId: drift.Value(selectedPoi?.id ?? 0),
+            signalId: drift.Value(selectedSignal?.id ?? 0),
+            pricePatternId: drift.Value(selectedPricePattern?.id ?? 0),
+            timeFrame: drift.Value(selectedTimeFrame ?? ''),
+            position: drift.Value(selectedPosition ?? ''),
+            winLose: drift.Value(selectedWinLoss ?? ''),
+            riskRewardRatio: drift.Value(rr),
+            fee: drift.Value(fee),
+            profit: drift.Value(profit),
+            createdAt: drift.Value(DateTime.now()),
+            updatedAt: drift.Value(DateTime.now()),
+          ),
+        );
+      }
+
       print('--- Journal Entry ---');
       print('Date: $tradeDate');
       print('Session: $selectedSessionTime');
@@ -127,6 +158,44 @@ class _AddJournalPageState extends ConsumerState<AddJournalPage> {
       dataManagementListProvider("Price Pattern"),
     );
 
+    final int? journalId = ModalRoute.of(context)?.settings.arguments as int?;
+    print('Journal ID: $journalId');
+    if (journalId != null) {
+      // Load existing journal data if editing
+      final journal = ref.watch(journalByIdProvider(journalId));
+      journal.when(
+        data: (data) {
+          if (data != null && !_isInitialized) {
+            _tradeDateController.text =
+                data.journal.date.toIso8601String().split('T')[0];
+            selectedSessionTime = data.journal.session;
+            selectedPair = DataItem(id: data.pair.id, name: data.pair.name);
+            selectedSetup = DataItem(id: data.setup.id, name: data.setup.name);
+            selectedPoi = DataItem(id: data.poi.id, name: data.poi.name);
+            selectedSignal = DataItem(
+              id: data.signal.id,
+              name: data.signal.name,
+            );
+            selectedPricePattern = DataItem(
+              id: data.pricePattern.id,
+              name: data.pricePattern.name,
+            );
+            selectedTimeFrame = data.journal.timeFrame;
+            selectedPosition = data.journal.position;
+            selectedWinLoss = data.journal.winLose;
+            _riskRewardRatioController.text =
+                data.journal.riskRewardRatio.toString();
+            _feeController.text = data.journal.fee.toString();
+            _profitController.text = data.journal.profit.toString();
+            createdAt = data.journal.createdAt;
+            _isInitialized = true; // ✅ Only run once
+          }
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, stack) => Center(child: Text('Error loading journal')),
+      );
+    }
+
     return Scaffold(
       appBar: CustomAppBar(
         title: 'Add Journal',
@@ -136,13 +205,13 @@ class _AddJournalPageState extends ConsumerState<AddJournalPage> {
             icon: const Icon(Icons.note_add, color: Colors.white),
             onPressed: () {
               // Implement functionality here
-              Navigator.pushNamed(context, '/note-journal-page');
+              Navigator.pushNamed(context, '/note-journal-page' , arguments: { "journalId": journalId, "noteId": null });
             },
           ),
           IconButton(
             icon: const Icon(Icons.save, color: Colors.white),
             onPressed: () {
-              _saveJournal();
+              _saveJournal(journalId);
             },
           ),
         ],

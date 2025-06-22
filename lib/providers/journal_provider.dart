@@ -19,3 +19,8 @@ final journalListProvider = FutureProvider<List<JournalFull>>((ref) async {
   final journalService = ref.watch(journalServiceProvider);
   return await journalService.getAllJournalsFull();
 });
+
+final journalByIdProvider = FutureProvider.family<JournalFull?, int>((ref, id) async {
+  final journalService = ref.watch(journalServiceProvider);
+  return await journalService.getJournalById(id);
+});
