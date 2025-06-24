@@ -5,28 +5,11 @@ import 'package:ppjournal/data/local/database.dart';
 import 'package:ppjournal/presentation/widgets/appbar_custom.dart';
 import 'package:ppjournal/providers/data_management_provider.dart';
 import 'package:ppjournal/providers/journal_provider.dart';
+import 'package:ppjournal/states/journal_note_state.dart';
 
 class AddJournalPage extends ConsumerStatefulWidget {
   @override
   _AddJournalPageState createState() => _AddJournalPageState();
-}
-
-class DataItem {
-  final int id;
-  final String name;
-
-  DataItem({required this.id, required this.name});
-
-  @override
-  String toString() => name; // So it shows nicely in the dropdown
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is DataItem && runtimeType == other.runtimeType && id == other.id;
-
-  @override
-  int get hashCode => id.hashCode;
 }
 
 class _AddJournalPageState extends ConsumerState<AddJournalPage> {
@@ -47,6 +30,7 @@ class _AddJournalPageState extends ConsumerState<AddJournalPage> {
   String? selectedWinLoss;
   DateTime? createdAt;
   bool _isInitialized = false;
+  int? _noteId;
 
   @override
   void dispose() {
@@ -157,7 +141,10 @@ class _AddJournalPageState extends ConsumerState<AddJournalPage> {
     final pricePatterns = ref.watch(
       dataManagementListProvider("Price Pattern"),
     );
+    final state = ref.watch(journalNoteProvider);
+    final notifier = ref.watch(journalNoteProvider.notifier);
 
+    print("state: ${state.sessionTime}");
     final int? journalId = ModalRoute.of(context)?.settings.arguments as int?;
     print('Journal ID: $journalId');
     if (journalId != null) {
@@ -188,7 +175,10 @@ class _AddJournalPageState extends ConsumerState<AddJournalPage> {
             _feeController.text = data.journal.fee.toString();
             _profitController.text = data.journal.profit.toString();
             createdAt = data.journal.createdAt;
+            _noteId = data.journal.noteId;
             _isInitialized = true; // ✅ Only run once
+
+            print("_noteId: ${data.journal.noteId}");
           }
         },
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -205,7 +195,11 @@ class _AddJournalPageState extends ConsumerState<AddJournalPage> {
             icon: const Icon(Icons.note_add, color: Colors.white),
             onPressed: () {
               // Implement functionality here
-              Navigator.pushNamed(context, '/note-journal-page' , arguments: { "journalId": journalId, "noteId": null });
+              Navigator.pushNamed(
+                context,
+                '/note-journal-page',
+                arguments: {"journalId": journalId, "noteId": _noteId},
+              );
             },
           ),
           IconButton(
@@ -227,7 +221,9 @@ class _AddJournalPageState extends ConsumerState<AddJournalPage> {
                 const SizedBox(height: 16.0),
                 _buildSectionTitle('Trade Details'),
                 const SizedBox(height: 8.0),
-                _buildDateField(),
+                _buildDateField("Trade Date", _tradeDateController, state.date, (date) {
+                  notifier.updateDate(date);
+                }),
                 const SizedBox(height: 16.0),
                 _buildDropdownField(
                   'Session Time',
@@ -241,11 +237,9 @@ class _AddJournalPageState extends ConsumerState<AddJournalPage> {
                     "18:00 - 21:00",
                     "21:00 - 00:00",
                   ],
-                  selectedSessionTime,
+                  state.sessionTime,
                   (value) {
-                    setState(() {
-                      selectedSessionTime = value;
-                    });
+                    notifier.updateSessionTime(value as String);
                   },
                 ),
                 const SizedBox(height: 16.0),
@@ -263,11 +257,9 @@ class _AddJournalPageState extends ConsumerState<AddJournalPage> {
                     loading: () => ['Loading...'],
                     error: (error, stack) => ['Error loading pairs'],
                   ),
-                  selectedPair,
+                  state.currencyPair,
                   (value) {
-                    setState(() {
-                      selectedPair = value as DataItem?;
-                    });
+                    notifier.updateCurrencyPair(value as DataItem);
                   },
                 ),
                 const SizedBox(height: 16.0),
@@ -285,11 +277,9 @@ class _AddJournalPageState extends ConsumerState<AddJournalPage> {
                     loading: () => ['Loading...'],
                     error: (error, stack) => ['Error loading setups'],
                   ),
-                  selectedSetup,
+                  state.setup,
                   (value) {
-                    setState(() {
-                      selectedSetup = value as DataItem?;
-                    });
+                    notifier.updateSetup(value as DataItem?);
                   },
                 ),
                 const SizedBox(height: 16.0),
@@ -306,11 +296,9 @@ class _AddJournalPageState extends ConsumerState<AddJournalPage> {
                     loading: () => ['Loading...'],
                     error: (error, stack) => ['Error loading POIs'],
                   ),
-                  selectedPoi,
+                  state.poi,
                   (value) {
-                    setState(() {
-                      selectedPoi = value as DataItem?;
-                    });
+                   notifier.updatePoi(value as DataItem?);
                   },
                 ),
                 const SizedBox(height: 16.0),
@@ -330,11 +318,9 @@ class _AddJournalPageState extends ConsumerState<AddJournalPage> {
                     loading: () => ['Loading...'],
                     error: (error, stack) => ['Error loading signals'],
                   ),
-                  selectedSignal,
+                  state.signal,
                   (value) {
-                    setState(() {
-                      selectedSignal = value as DataItem?;
-                    });
+                    notifier.updateSignal(value as DataItem?);
                   },
                 ),
                 const SizedBox(height: 16.0),
@@ -356,54 +342,52 @@ class _AddJournalPageState extends ConsumerState<AddJournalPage> {
                     loading: () => ['Loading...'],
                     error: (error, stack) => ['Error loading patterns'],
                   ),
-                  selectedPricePattern,
+                  state.pricePattern,
                   (value) {
-                    setState(() {
-                      selectedPricePattern = value as DataItem?;
-                    });
+                    notifier.updatePricePattern(value as DataItem?);
                   },
                 ),
                 const SizedBox(height: 16.0),
                 _buildDropdownField(
                   'Time Frame',
                   ['1H', '4H', '1D'],
-                  selectedTimeFrame,
+                  state.timeFrame,
                   (value) {
-                    setState(() {
-                      selectedTimeFrame = value;
-                    });
+                    notifier.updateTimeFrame(value as String);
                   },
                 ),
                 const SizedBox(height: 16.0),
                 _buildDropdownField(
                   'Position',
                   ['Long', 'Short'],
-                  selectedPosition,
+                  state.position,
                   (value) {
-                    setState(() {
-                      selectedPosition = value;
-                    });
+                    notifier.updatePosition(value as String);
                   },
                 ),
                 const SizedBox(height: 16.0),
                 _buildDropdownField(
                   'Win/Loss',
                   ['Win', 'Loss'],
-                  selectedWinLoss,
+                  state.winLose,
                   (value) {
-                    setState(() {
-                      selectedWinLoss = value;
-                    });
+                    notifier.updateWinLose(value as String);
                   },
                 ),
                 const SizedBox(height: 16.0),
                 _buildSectionTitle('Trade Metrics'),
                 const SizedBox(height: 8.0),
-                _buildNumberField('RR', _riskRewardRatioController),
+                _buildNumberField('RR', _riskRewardRatioController, state.rr, (value) {
+                  notifier.updateRR(value);
+                }),
                 const SizedBox(height: 16.0),
-                _buildNumberField('Fee', _feeController),
+                _buildNumberField('Fee', _feeController, state.fee,  (value) {
+                  notifier.updateFee(value);
+                }),
                 const SizedBox(height: 16.0),
-                _buildNumberField('Profit', _profitController),
+                _buildNumberField('Profit', _profitController, state.profit, (value) {
+                  notifier.updateProfit(value);
+                }),
                 const SizedBox(height: 16.0),
               ],
             ),
@@ -413,9 +397,15 @@ class _AddJournalPageState extends ConsumerState<AddJournalPage> {
     );
   }
 
-  _buildDateField() {
+  _buildDateField<T>(
+    String label,
+    TextEditingController controller,
+    DateTime? value,
+    void Function(DateTime? date) onDateSelected,
+  ) {
+    controller.text = "${value?.toLocal()}".split(' ')[0];
     return TextFormField(
-      controller: _tradeDateController,
+      controller: controller,
       decoration: const InputDecoration(
         labelText: 'Trade Date',
         border: OutlineInputBorder(),
@@ -429,9 +419,7 @@ class _AddJournalPageState extends ConsumerState<AddJournalPage> {
           lastDate: DateTime(2101),
         );
         if (pickedDate != null) {
-          setState(() {
-            _tradeDateController.text = "${pickedDate.toLocal()}".split(' ')[0];
-          });
+          onDateSelected(pickedDate);
         }
       },
     );
@@ -485,7 +473,8 @@ class _AddJournalPageState extends ConsumerState<AddJournalPage> {
     );
   }
 
-  _buildNumberField(String label, TextEditingController controller) {
+  _buildNumberField<T>(String label, TextEditingController controller, T? selectedValue, void Function(double? value)? onChanged) {
+    controller.text = selectedValue?.toString() ?? '';
     return TextFormField(
       controller: controller,
       keyboardType: TextInputType.number,
@@ -502,6 +491,12 @@ class _AddJournalPageState extends ConsumerState<AddJournalPage> {
           return 'Please enter a valid number for $label';
         }
         return null;
+      },
+      onChanged: (value) {
+        if (onChanged != null) {
+          final double? number = double.tryParse(value);
+          onChanged(number);
+        }
       },
     );
   }

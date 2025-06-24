@@ -15,7 +15,9 @@ class Journal extends Table {
   RealColumn get profit => real()();
   RealColumn get riskRewardRatio => real()();
   RealColumn get fee => real()();
-  IntColumn get noteId => integer().nullable()();        // FK
+  TextColumn get noteDetail => text()();
+  BlobColumn get beforePicture => blob().nullable()(); // for image storage
+  BlobColumn get afterPicture => blob().nullable()();  // for image storage
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
 }
