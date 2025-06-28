@@ -8,13 +8,23 @@ class JournalRepository {
   JournalRepository(this.db);
 
   Future<List<JournalFull>> getAllJournalsFull() async {
+    final testSelect = db.select(db.journal);
+    print("Test Select: $testSelect");
     final query = db.select(db.journal).join([
-      innerJoin(db.tradeSetup, db.tradeSetup.id.equalsExp(db.journal.tradeSetupId)),
-      innerJoin(db.poi, db.poi.id.equalsExp(db.journal.poiId)),
-      innerJoin(db.signal, db.signal.id.equalsExp(db.journal.signalId)),
-      innerJoin(db.currencyPairs, db.currencyPairs.id.equalsExp(db.journal.pairId)),
-      innerJoin(
-          db.pricePattern, db.pricePattern.id.equalsExp(db.journal.pricePatternId)),
+      leftOuterJoin(
+        db.tradeSetup,
+        db.tradeSetup.id.equalsExp(db.journal.tradeSetupId),
+      ),
+      leftOuterJoin(db.poi, db.poi.id.equalsExp(db.journal.poiId)),
+      leftOuterJoin(db.signal, db.signal.id.equalsExp(db.journal.signalId)),
+      leftOuterJoin(
+        db.currencyPairs,
+        db.currencyPairs.id.equalsExp(db.journal.pairId),
+      ),
+      leftOuterJoin(
+        db.pricePattern,
+        db.pricePattern.id.equalsExp(db.journal.pricePatternId),
+      ),
     ]);
 
     final results = await query.get();
@@ -22,11 +32,11 @@ class JournalRepository {
     return results.map((row) {
       return JournalFull(
         journal: row.readTable(db.journal),
-        setup: row.readTable(db.tradeSetup),
-        poi: row.readTable(db.poi),
-        signal: row.readTable(db.signal),
-        pair: row.readTable(db.currencyPairs),
-        pricePattern: row.readTable(db.pricePattern),
+        setup: row.readTableOrNull(db.tradeSetup), // ใช้ readTableOrNull
+        poi: row.readTableOrNull(db.poi),
+        signal: row.readTableOrNull(db.signal),
+        pair: row.readTableOrNull(db.currencyPairs),
+        pricePattern: row.readTableOrNull(db.pricePattern),
       );
     }).toList();
   }
@@ -35,33 +45,51 @@ class JournalRepository {
 
   Future<JournalFull?> getJournalById(int id) {
     final query = db.select(db.journal).join([
-      innerJoin(db.tradeSetup, db.tradeSetup.id.equalsExp(db.journal.tradeSetupId)),
-      innerJoin(db.poi, db.poi.id.equalsExp(db.journal.poiId)),
-      innerJoin(db.signal, db.signal.id.equalsExp(db.journal.signalId)),
-      innerJoin(db.currencyPairs, db.currencyPairs.id.equalsExp(db.journal.pairId)),
-      innerJoin(
-          db.pricePattern, db.pricePattern.id.equalsExp(db.journal.pricePatternId)),
-    ])
-      ..where(db.journal.id.equals(id));
+      leftOuterJoin(
+        db.tradeSetup,
+        db.tradeSetup.id.equalsExp(db.journal.tradeSetupId),
+      ),
+      leftOuterJoin(db.poi, db.poi.id.equalsExp(db.journal.poiId)),
+      leftOuterJoin(db.signal, db.signal.id.equalsExp(db.journal.signalId)),
+      leftOuterJoin(
+        db.currencyPairs,
+        db.currencyPairs.id.equalsExp(db.journal.pairId),
+      ),
+      leftOuterJoin(
+        db.pricePattern,
+        db.pricePattern.id.equalsExp(db.journal.pricePatternId),
+      ),
+    ])..where(db.journal.id.equals(id));
 
     return query.getSingleOrNull().then((row) {
       if (row == null) return null;
 
       return JournalFull(
         journal: row.readTable(db.journal),
-        setup: row.readTable(db.tradeSetup),
-        poi: row.readTable(db.poi),
-        signal: row.readTable(db.signal),
-        pair: row.readTable(db.currencyPairs),
-        pricePattern: row.readTable(db.pricePattern),
+        setup: row.readTableOrNull(db.tradeSetup),
+        poi: row.readTableOrNull(db.poi),
+        signal: row.readTableOrNull(db.signal),
+        pair: row.readTableOrNull(db.currencyPairs),
+        pricePattern: row.readTableOrNull(db.pricePattern),
       );
     });
   }
 
-  Future<int> insertJournal(JournalCompanion data) =>
-      db.into(db.journal).insert(data);
+  Future<int> insertJournal(JournalCompanion data) async {
+    try {
+      final result = db.into(db.journal).insert(data);
+      return result;
+    } catch (e) {
+      print('Insert failed: $e');
+      return 0;
+    }
+  }
 
-  Future<bool> updateJournal(JournalData data) => db.update(db.journal).replace(data);   
+  Future<bool> updateJournal(int journalId, JournalCompanion updates) async {
+    final result = await (db.update(db.journal)
+      ..where((tbl) => tbl.id.equals(journalId))).write(updates);
+    return result == 1;
+  }
 
   Future<int> deleteJournal(int id) =>
       (db.delete(db.journal)..where((tbl) => tbl.id.equals(id))).go();

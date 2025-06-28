@@ -72,7 +72,7 @@ class _JournalPageState extends ConsumerState<JournalPage> {
   @override
   Widget build(BuildContext context) {
     final journalAsyncValue = ref.watch(journalListProvider);
-
+    print("journalAsyncValue: $journalAsyncValue");
     return Column(
       children: [
         Row(
@@ -116,9 +116,13 @@ class _JournalPageState extends ConsumerState<JournalPage> {
   Widget _buildJournalCard(JournalFull entry) {
     print("journal entry: ${entry.journal.id}");
     final date = entry.journal.date;
-     String formattedDate = "${date.year.toString().padLeft(4, '0')}-"
+    String formattedDate = "-";
+    if (date != null) {
+       formattedDate = "${date.year.toString().padLeft(4, '0')}-"
                      "${date.month.toString().padLeft(2, '0')}-"
                      "${date.day.toString().padLeft(2, '0')}";
+    }
+    
     return Card(
       color: AppColors.primary,
       margin: EdgeInsets.all(8.0),
@@ -132,9 +136,9 @@ class _JournalPageState extends ConsumerState<JournalPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text("Date : ${formattedDate}", style: _style()),
-                Text("${entry.journal.session}", style: _style()),
-                Text("Pair : ${entry.pair.name}", style: _style()),
+                Text("Date : ${formattedDate ?? "-"}", style: _style()),
+                Text("${entry.journal.session ?? "-"}", style: _style()),
+                Text("Pair : ${entry.pair?.name ?? "-"}", style: _style()),
               ],
             ),
             SizedBox(height: 10),
@@ -143,12 +147,12 @@ class _JournalPageState extends ConsumerState<JournalPage> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("Setup : ${entry.setup.name}", style: _style()),
-                Text("POI : ${entry.poi.name}", style: _style()),
-                Text("Price Pattern : ${entry.pricePattern.name}", style: _style()),
-                Text("Win Loss : ${entry.journal.winLose}", style: _style()),
-                Text("RR : ${entry.journal.riskRewardRatio}", style: _style()),
-                Text("Profit : ${entry.journal.profit}", style: _style()),
+                Text("Setup : ${entry.setup?.name ?? "-"}", style: _style()),
+                Text("POI : ${entry.poi?.name ?? "-"}", style: _style()),
+                Text("Price Pattern : ${entry.pricePattern?.name ?? "-"}", style: _style()),
+                Text("Win Loss : ${entry.journal.winLose ?? "-"}", style: _style()),
+                Text("RR : ${entry.journal.riskRewardRatio ?? "-"}", style: _style()),
+                Text("Profit : ${entry.journal.profit ?? "-"}", style: _style()),
                 Text("Fee : ${entry.journal.fee}", style: _style()),
               ],
             ),
@@ -163,7 +167,7 @@ class _JournalPageState extends ConsumerState<JournalPage> {
                     Navigator.pushNamed(
                       context,
                       '/note-journal-page',
-                      arguments: entry.journal.noteId,
+                      // arguments: entry.journal.noteId,
                     )
                   },
                   icon: Icon(Icons.note),
@@ -171,6 +175,7 @@ class _JournalPageState extends ConsumerState<JournalPage> {
                 ),
                 IconButton(
                   onPressed: () => {
+                    ref.invalidate(journalNoteProvider), // Reset state when adding a new journal
                     Navigator.pushNamed(
                       context,
                       '/add-journal-page',
@@ -180,8 +185,8 @@ class _JournalPageState extends ConsumerState<JournalPage> {
                   icon: Icon(Icons.edit),
                   color: AppColors.onPrimary,
                 ),
-                Text("TF : ${entry.journal.timeFrame} ", style: _style()),
-                Text("Position : ${entry.journal.position}", style: _style()),
+                Text("TF : ${entry.journal.timeFrame ?? "-"} ", style: _style()),
+                Text("Position : ${entry.journal.position ?? "-"}", style: _style()),
               ],
             ),
           ],

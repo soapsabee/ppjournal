@@ -15,10 +15,10 @@ class NoteRepository {
     // Insert the note
     int noteId = 0;
     try {
-      noteId = await db.into(db.note).insert(data);
-      final affectedRows = await (db.update(db.journal)..where(
-        (tbl) => tbl.id.equals(journalId),
-      )).write(JournalCompanion(noteId: Value(noteId)));
+      // noteId = await db.into(db.note).insert(data);
+      // final affectedRows = await (db.update(db.journal)..where(
+      //   (tbl) => tbl.id.equals(journalId),
+      // )).write(JournalCompanion(noteId: Value(noteId)));
     } catch (e) {
       return 0;
     }

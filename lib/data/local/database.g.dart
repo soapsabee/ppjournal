@@ -899,9 +899,9 @@ class $JournalTable extends Journal with TableInfo<$JournalTable, JournalData> {
   late final GeneratedColumn<DateTime> date = GeneratedColumn<DateTime>(
     'date',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.dateTime,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _sessionMeta = const VerificationMeta(
     'session',
@@ -910,9 +910,9 @@ class $JournalTable extends Journal with TableInfo<$JournalTable, JournalData> {
   late final GeneratedColumn<String> session = GeneratedColumn<String>(
     'session',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.string,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _pairIdMeta = const VerificationMeta('pairId');
   @override
@@ -972,9 +972,9 @@ class $JournalTable extends Journal with TableInfo<$JournalTable, JournalData> {
   late final GeneratedColumn<String> timeFrame = GeneratedColumn<String>(
     'time_frame',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.string,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _positionMeta = const VerificationMeta(
     'position',
@@ -983,9 +983,9 @@ class $JournalTable extends Journal with TableInfo<$JournalTable, JournalData> {
   late final GeneratedColumn<String> position = GeneratedColumn<String>(
     'position',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.string,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _winLoseMeta = const VerificationMeta(
     'winLose',
@@ -994,18 +994,18 @@ class $JournalTable extends Journal with TableInfo<$JournalTable, JournalData> {
   late final GeneratedColumn<String> winLose = GeneratedColumn<String>(
     'win_lose',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.string,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _profitMeta = const VerificationMeta('profit');
   @override
   late final GeneratedColumn<double> profit = GeneratedColumn<double>(
     'profit',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.double,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _riskRewardRatioMeta = const VerificationMeta(
     'riskRewardRatio',
@@ -1014,28 +1014,54 @@ class $JournalTable extends Journal with TableInfo<$JournalTable, JournalData> {
   late final GeneratedColumn<double> riskRewardRatio = GeneratedColumn<double>(
     'risk_reward_ratio',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.double,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _feeMeta = const VerificationMeta('fee');
   @override
   late final GeneratedColumn<double> fee = GeneratedColumn<double>(
     'fee',
     aliasedName,
-    false,
-    type: DriftSqlType.double,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _noteIdMeta = const VerificationMeta('noteId');
-  @override
-  late final GeneratedColumn<int> noteId = GeneratedColumn<int>(
-    'note_id',
-    aliasedName,
     true,
-    type: DriftSqlType.int,
+    type: DriftSqlType.double,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _noteDetailMeta = const VerificationMeta(
+    'noteDetail',
+  );
+  @override
+  late final GeneratedColumn<String> noteDetail = GeneratedColumn<String>(
+    'note_detail',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _beforePictureMeta = const VerificationMeta(
+    'beforePicture',
+  );
+  @override
+  late final GeneratedColumn<Uint8List> beforePicture =
+      GeneratedColumn<Uint8List>(
+        'before_picture',
+        aliasedName,
+        true,
+        type: DriftSqlType.blob,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _afterPictureMeta = const VerificationMeta(
+    'afterPicture',
+  );
+  @override
+  late final GeneratedColumn<Uint8List> afterPicture =
+      GeneratedColumn<Uint8List>(
+        'after_picture',
+        aliasedName,
+        true,
+        type: DriftSqlType.blob,
+        requiredDuringInsert: false,
+      );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -1074,7 +1100,9 @@ class $JournalTable extends Journal with TableInfo<$JournalTable, JournalData> {
     profit,
     riskRewardRatio,
     fee,
-    noteId,
+    noteDetail,
+    beforePicture,
+    afterPicture,
     createdAt,
     updatedAt,
   ];
@@ -1098,16 +1126,12 @@ class $JournalTable extends Journal with TableInfo<$JournalTable, JournalData> {
         _dateMeta,
         date.isAcceptableOrUnknown(data['date']!, _dateMeta),
       );
-    } else if (isInserting) {
-      context.missing(_dateMeta);
     }
     if (data.containsKey('session')) {
       context.handle(
         _sessionMeta,
         session.isAcceptableOrUnknown(data['session']!, _sessionMeta),
       );
-    } else if (isInserting) {
-      context.missing(_sessionMeta);
     }
     if (data.containsKey('pair_id')) {
       context.handle(
@@ -1150,32 +1174,24 @@ class $JournalTable extends Journal with TableInfo<$JournalTable, JournalData> {
         _timeFrameMeta,
         timeFrame.isAcceptableOrUnknown(data['time_frame']!, _timeFrameMeta),
       );
-    } else if (isInserting) {
-      context.missing(_timeFrameMeta);
     }
     if (data.containsKey('position')) {
       context.handle(
         _positionMeta,
         position.isAcceptableOrUnknown(data['position']!, _positionMeta),
       );
-    } else if (isInserting) {
-      context.missing(_positionMeta);
     }
     if (data.containsKey('win_lose')) {
       context.handle(
         _winLoseMeta,
         winLose.isAcceptableOrUnknown(data['win_lose']!, _winLoseMeta),
       );
-    } else if (isInserting) {
-      context.missing(_winLoseMeta);
     }
     if (data.containsKey('profit')) {
       context.handle(
         _profitMeta,
         profit.isAcceptableOrUnknown(data['profit']!, _profitMeta),
       );
-    } else if (isInserting) {
-      context.missing(_profitMeta);
     }
     if (data.containsKey('risk_reward_ratio')) {
       context.handle(
@@ -1185,21 +1201,35 @@ class $JournalTable extends Journal with TableInfo<$JournalTable, JournalData> {
           _riskRewardRatioMeta,
         ),
       );
-    } else if (isInserting) {
-      context.missing(_riskRewardRatioMeta);
     }
     if (data.containsKey('fee')) {
       context.handle(
         _feeMeta,
         fee.isAcceptableOrUnknown(data['fee']!, _feeMeta),
       );
-    } else if (isInserting) {
-      context.missing(_feeMeta);
     }
-    if (data.containsKey('note_id')) {
+    if (data.containsKey('note_detail')) {
       context.handle(
-        _noteIdMeta,
-        noteId.isAcceptableOrUnknown(data['note_id']!, _noteIdMeta),
+        _noteDetailMeta,
+        noteDetail.isAcceptableOrUnknown(data['note_detail']!, _noteDetailMeta),
+      );
+    }
+    if (data.containsKey('before_picture')) {
+      context.handle(
+        _beforePictureMeta,
+        beforePicture.isAcceptableOrUnknown(
+          data['before_picture']!,
+          _beforePictureMeta,
+        ),
+      );
+    }
+    if (data.containsKey('after_picture')) {
+      context.handle(
+        _afterPictureMeta,
+        afterPicture.isAcceptableOrUnknown(
+          data['after_picture']!,
+          _afterPictureMeta,
+        ),
       );
     }
     if (data.containsKey('created_at')) {
@@ -1232,16 +1262,14 @@ class $JournalTable extends Journal with TableInfo<$JournalTable, JournalData> {
             DriftSqlType.int,
             data['${effectivePrefix}id'],
           )!,
-      date:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.dateTime,
-            data['${effectivePrefix}date'],
-          )!,
-      session:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.string,
-            data['${effectivePrefix}session'],
-          )!,
+      date: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}date'],
+      ),
+      session: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}session'],
+      ),
       pairId: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}pair_id'],
@@ -1262,39 +1290,41 @@ class $JournalTable extends Journal with TableInfo<$JournalTable, JournalData> {
         DriftSqlType.int,
         data['${effectivePrefix}price_pattern_id'],
       ),
-      timeFrame:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.string,
-            data['${effectivePrefix}time_frame'],
-          )!,
-      position:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.string,
-            data['${effectivePrefix}position'],
-          )!,
-      winLose:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.string,
-            data['${effectivePrefix}win_lose'],
-          )!,
-      profit:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.double,
-            data['${effectivePrefix}profit'],
-          )!,
-      riskRewardRatio:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.double,
-            data['${effectivePrefix}risk_reward_ratio'],
-          )!,
-      fee:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.double,
-            data['${effectivePrefix}fee'],
-          )!,
-      noteId: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}note_id'],
+      timeFrame: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}time_frame'],
+      ),
+      position: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}position'],
+      ),
+      winLose: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}win_lose'],
+      ),
+      profit: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}profit'],
+      ),
+      riskRewardRatio: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}risk_reward_ratio'],
+      ),
+      fee: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}fee'],
+      ),
+      noteDetail: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}note_detail'],
+      ),
+      beforePicture: attachedDatabase.typeMapping.read(
+        DriftSqlType.blob,
+        data['${effectivePrefix}before_picture'],
+      ),
+      afterPicture: attachedDatabase.typeMapping.read(
+        DriftSqlType.blob,
+        data['${effectivePrefix}after_picture'],
       ),
       createdAt:
           attachedDatabase.typeMapping.read(
@@ -1317,38 +1347,42 @@ class $JournalTable extends Journal with TableInfo<$JournalTable, JournalData> {
 
 class JournalData extends DataClass implements Insertable<JournalData> {
   final int id;
-  final DateTime date;
-  final String session;
+  final DateTime? date;
+  final String? session;
   final int? pairId;
   final int? tradeSetupId;
   final int? poiId;
   final int? signalId;
   final int? pricePatternId;
-  final String timeFrame;
-  final String position;
-  final String winLose;
-  final double profit;
-  final double riskRewardRatio;
-  final double fee;
-  final int? noteId;
+  final String? timeFrame;
+  final String? position;
+  final String? winLose;
+  final double? profit;
+  final double? riskRewardRatio;
+  final double? fee;
+  final String? noteDetail;
+  final Uint8List? beforePicture;
+  final Uint8List? afterPicture;
   final DateTime createdAt;
   final DateTime updatedAt;
   const JournalData({
     required this.id,
-    required this.date,
-    required this.session,
+    this.date,
+    this.session,
     this.pairId,
     this.tradeSetupId,
     this.poiId,
     this.signalId,
     this.pricePatternId,
-    required this.timeFrame,
-    required this.position,
-    required this.winLose,
-    required this.profit,
-    required this.riskRewardRatio,
-    required this.fee,
-    this.noteId,
+    this.timeFrame,
+    this.position,
+    this.winLose,
+    this.profit,
+    this.riskRewardRatio,
+    this.fee,
+    this.noteDetail,
+    this.beforePicture,
+    this.afterPicture,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -1356,8 +1390,12 @@ class JournalData extends DataClass implements Insertable<JournalData> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
-    map['date'] = Variable<DateTime>(date);
-    map['session'] = Variable<String>(session);
+    if (!nullToAbsent || date != null) {
+      map['date'] = Variable<DateTime>(date);
+    }
+    if (!nullToAbsent || session != null) {
+      map['session'] = Variable<String>(session);
+    }
     if (!nullToAbsent || pairId != null) {
       map['pair_id'] = Variable<int>(pairId);
     }
@@ -1373,14 +1411,32 @@ class JournalData extends DataClass implements Insertable<JournalData> {
     if (!nullToAbsent || pricePatternId != null) {
       map['price_pattern_id'] = Variable<int>(pricePatternId);
     }
-    map['time_frame'] = Variable<String>(timeFrame);
-    map['position'] = Variable<String>(position);
-    map['win_lose'] = Variable<String>(winLose);
-    map['profit'] = Variable<double>(profit);
-    map['risk_reward_ratio'] = Variable<double>(riskRewardRatio);
-    map['fee'] = Variable<double>(fee);
-    if (!nullToAbsent || noteId != null) {
-      map['note_id'] = Variable<int>(noteId);
+    if (!nullToAbsent || timeFrame != null) {
+      map['time_frame'] = Variable<String>(timeFrame);
+    }
+    if (!nullToAbsent || position != null) {
+      map['position'] = Variable<String>(position);
+    }
+    if (!nullToAbsent || winLose != null) {
+      map['win_lose'] = Variable<String>(winLose);
+    }
+    if (!nullToAbsent || profit != null) {
+      map['profit'] = Variable<double>(profit);
+    }
+    if (!nullToAbsent || riskRewardRatio != null) {
+      map['risk_reward_ratio'] = Variable<double>(riskRewardRatio);
+    }
+    if (!nullToAbsent || fee != null) {
+      map['fee'] = Variable<double>(fee);
+    }
+    if (!nullToAbsent || noteDetail != null) {
+      map['note_detail'] = Variable<String>(noteDetail);
+    }
+    if (!nullToAbsent || beforePicture != null) {
+      map['before_picture'] = Variable<Uint8List>(beforePicture);
+    }
+    if (!nullToAbsent || afterPicture != null) {
+      map['after_picture'] = Variable<Uint8List>(afterPicture);
     }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
@@ -1390,8 +1446,11 @@ class JournalData extends DataClass implements Insertable<JournalData> {
   JournalCompanion toCompanion(bool nullToAbsent) {
     return JournalCompanion(
       id: Value(id),
-      date: Value(date),
-      session: Value(session),
+      date: date == null && nullToAbsent ? const Value.absent() : Value(date),
+      session:
+          session == null && nullToAbsent
+              ? const Value.absent()
+              : Value(session),
       pairId:
           pairId == null && nullToAbsent ? const Value.absent() : Value(pairId),
       tradeSetupId:
@@ -1408,14 +1467,37 @@ class JournalData extends DataClass implements Insertable<JournalData> {
           pricePatternId == null && nullToAbsent
               ? const Value.absent()
               : Value(pricePatternId),
-      timeFrame: Value(timeFrame),
-      position: Value(position),
-      winLose: Value(winLose),
-      profit: Value(profit),
-      riskRewardRatio: Value(riskRewardRatio),
-      fee: Value(fee),
-      noteId:
-          noteId == null && nullToAbsent ? const Value.absent() : Value(noteId),
+      timeFrame:
+          timeFrame == null && nullToAbsent
+              ? const Value.absent()
+              : Value(timeFrame),
+      position:
+          position == null && nullToAbsent
+              ? const Value.absent()
+              : Value(position),
+      winLose:
+          winLose == null && nullToAbsent
+              ? const Value.absent()
+              : Value(winLose),
+      profit:
+          profit == null && nullToAbsent ? const Value.absent() : Value(profit),
+      riskRewardRatio:
+          riskRewardRatio == null && nullToAbsent
+              ? const Value.absent()
+              : Value(riskRewardRatio),
+      fee: fee == null && nullToAbsent ? const Value.absent() : Value(fee),
+      noteDetail:
+          noteDetail == null && nullToAbsent
+              ? const Value.absent()
+              : Value(noteDetail),
+      beforePicture:
+          beforePicture == null && nullToAbsent
+              ? const Value.absent()
+              : Value(beforePicture),
+      afterPicture:
+          afterPicture == null && nullToAbsent
+              ? const Value.absent()
+              : Value(afterPicture),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
     );
@@ -1428,20 +1510,22 @@ class JournalData extends DataClass implements Insertable<JournalData> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return JournalData(
       id: serializer.fromJson<int>(json['id']),
-      date: serializer.fromJson<DateTime>(json['date']),
-      session: serializer.fromJson<String>(json['session']),
+      date: serializer.fromJson<DateTime?>(json['date']),
+      session: serializer.fromJson<String?>(json['session']),
       pairId: serializer.fromJson<int?>(json['pairId']),
       tradeSetupId: serializer.fromJson<int?>(json['tradeSetupId']),
       poiId: serializer.fromJson<int?>(json['poiId']),
       signalId: serializer.fromJson<int?>(json['signalId']),
       pricePatternId: serializer.fromJson<int?>(json['pricePatternId']),
-      timeFrame: serializer.fromJson<String>(json['timeFrame']),
-      position: serializer.fromJson<String>(json['position']),
-      winLose: serializer.fromJson<String>(json['winLose']),
-      profit: serializer.fromJson<double>(json['profit']),
-      riskRewardRatio: serializer.fromJson<double>(json['riskRewardRatio']),
-      fee: serializer.fromJson<double>(json['fee']),
-      noteId: serializer.fromJson<int?>(json['noteId']),
+      timeFrame: serializer.fromJson<String?>(json['timeFrame']),
+      position: serializer.fromJson<String?>(json['position']),
+      winLose: serializer.fromJson<String?>(json['winLose']),
+      profit: serializer.fromJson<double?>(json['profit']),
+      riskRewardRatio: serializer.fromJson<double?>(json['riskRewardRatio']),
+      fee: serializer.fromJson<double?>(json['fee']),
+      noteDetail: serializer.fromJson<String?>(json['noteDetail']),
+      beforePicture: serializer.fromJson<Uint8List?>(json['beforePicture']),
+      afterPicture: serializer.fromJson<Uint8List?>(json['afterPicture']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
@@ -1451,20 +1535,22 @@ class JournalData extends DataClass implements Insertable<JournalData> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
-      'date': serializer.toJson<DateTime>(date),
-      'session': serializer.toJson<String>(session),
+      'date': serializer.toJson<DateTime?>(date),
+      'session': serializer.toJson<String?>(session),
       'pairId': serializer.toJson<int?>(pairId),
       'tradeSetupId': serializer.toJson<int?>(tradeSetupId),
       'poiId': serializer.toJson<int?>(poiId),
       'signalId': serializer.toJson<int?>(signalId),
       'pricePatternId': serializer.toJson<int?>(pricePatternId),
-      'timeFrame': serializer.toJson<String>(timeFrame),
-      'position': serializer.toJson<String>(position),
-      'winLose': serializer.toJson<String>(winLose),
-      'profit': serializer.toJson<double>(profit),
-      'riskRewardRatio': serializer.toJson<double>(riskRewardRatio),
-      'fee': serializer.toJson<double>(fee),
-      'noteId': serializer.toJson<int?>(noteId),
+      'timeFrame': serializer.toJson<String?>(timeFrame),
+      'position': serializer.toJson<String?>(position),
+      'winLose': serializer.toJson<String?>(winLose),
+      'profit': serializer.toJson<double?>(profit),
+      'riskRewardRatio': serializer.toJson<double?>(riskRewardRatio),
+      'fee': serializer.toJson<double?>(fee),
+      'noteDetail': serializer.toJson<String?>(noteDetail),
+      'beforePicture': serializer.toJson<Uint8List?>(beforePicture),
+      'afterPicture': serializer.toJson<Uint8List?>(afterPicture),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
@@ -1472,39 +1558,45 @@ class JournalData extends DataClass implements Insertable<JournalData> {
 
   JournalData copyWith({
     int? id,
-    DateTime? date,
-    String? session,
+    Value<DateTime?> date = const Value.absent(),
+    Value<String?> session = const Value.absent(),
     Value<int?> pairId = const Value.absent(),
     Value<int?> tradeSetupId = const Value.absent(),
     Value<int?> poiId = const Value.absent(),
     Value<int?> signalId = const Value.absent(),
     Value<int?> pricePatternId = const Value.absent(),
-    String? timeFrame,
-    String? position,
-    String? winLose,
-    double? profit,
-    double? riskRewardRatio,
-    double? fee,
-    Value<int?> noteId = const Value.absent(),
+    Value<String?> timeFrame = const Value.absent(),
+    Value<String?> position = const Value.absent(),
+    Value<String?> winLose = const Value.absent(),
+    Value<double?> profit = const Value.absent(),
+    Value<double?> riskRewardRatio = const Value.absent(),
+    Value<double?> fee = const Value.absent(),
+    Value<String?> noteDetail = const Value.absent(),
+    Value<Uint8List?> beforePicture = const Value.absent(),
+    Value<Uint8List?> afterPicture = const Value.absent(),
     DateTime? createdAt,
     DateTime? updatedAt,
   }) => JournalData(
     id: id ?? this.id,
-    date: date ?? this.date,
-    session: session ?? this.session,
+    date: date.present ? date.value : this.date,
+    session: session.present ? session.value : this.session,
     pairId: pairId.present ? pairId.value : this.pairId,
     tradeSetupId: tradeSetupId.present ? tradeSetupId.value : this.tradeSetupId,
     poiId: poiId.present ? poiId.value : this.poiId,
     signalId: signalId.present ? signalId.value : this.signalId,
     pricePatternId:
         pricePatternId.present ? pricePatternId.value : this.pricePatternId,
-    timeFrame: timeFrame ?? this.timeFrame,
-    position: position ?? this.position,
-    winLose: winLose ?? this.winLose,
-    profit: profit ?? this.profit,
-    riskRewardRatio: riskRewardRatio ?? this.riskRewardRatio,
-    fee: fee ?? this.fee,
-    noteId: noteId.present ? noteId.value : this.noteId,
+    timeFrame: timeFrame.present ? timeFrame.value : this.timeFrame,
+    position: position.present ? position.value : this.position,
+    winLose: winLose.present ? winLose.value : this.winLose,
+    profit: profit.present ? profit.value : this.profit,
+    riskRewardRatio:
+        riskRewardRatio.present ? riskRewardRatio.value : this.riskRewardRatio,
+    fee: fee.present ? fee.value : this.fee,
+    noteDetail: noteDetail.present ? noteDetail.value : this.noteDetail,
+    beforePicture:
+        beforePicture.present ? beforePicture.value : this.beforePicture,
+    afterPicture: afterPicture.present ? afterPicture.value : this.afterPicture,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
   );
@@ -1533,7 +1625,16 @@ class JournalData extends DataClass implements Insertable<JournalData> {
               ? data.riskRewardRatio.value
               : this.riskRewardRatio,
       fee: data.fee.present ? data.fee.value : this.fee,
-      noteId: data.noteId.present ? data.noteId.value : this.noteId,
+      noteDetail:
+          data.noteDetail.present ? data.noteDetail.value : this.noteDetail,
+      beforePicture:
+          data.beforePicture.present
+              ? data.beforePicture.value
+              : this.beforePicture,
+      afterPicture:
+          data.afterPicture.present
+              ? data.afterPicture.value
+              : this.afterPicture,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -1556,7 +1657,9 @@ class JournalData extends DataClass implements Insertable<JournalData> {
           ..write('profit: $profit, ')
           ..write('riskRewardRatio: $riskRewardRatio, ')
           ..write('fee: $fee, ')
-          ..write('noteId: $noteId, ')
+          ..write('noteDetail: $noteDetail, ')
+          ..write('beforePicture: $beforePicture, ')
+          ..write('afterPicture: $afterPicture, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -1579,7 +1682,9 @@ class JournalData extends DataClass implements Insertable<JournalData> {
     profit,
     riskRewardRatio,
     fee,
-    noteId,
+    noteDetail,
+    $driftBlobEquality.hash(beforePicture),
+    $driftBlobEquality.hash(afterPicture),
     createdAt,
     updatedAt,
   );
@@ -1601,27 +1706,31 @@ class JournalData extends DataClass implements Insertable<JournalData> {
           other.profit == this.profit &&
           other.riskRewardRatio == this.riskRewardRatio &&
           other.fee == this.fee &&
-          other.noteId == this.noteId &&
+          other.noteDetail == this.noteDetail &&
+          $driftBlobEquality.equals(other.beforePicture, this.beforePicture) &&
+          $driftBlobEquality.equals(other.afterPicture, this.afterPicture) &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
 
 class JournalCompanion extends UpdateCompanion<JournalData> {
   final Value<int> id;
-  final Value<DateTime> date;
-  final Value<String> session;
+  final Value<DateTime?> date;
+  final Value<String?> session;
   final Value<int?> pairId;
   final Value<int?> tradeSetupId;
   final Value<int?> poiId;
   final Value<int?> signalId;
   final Value<int?> pricePatternId;
-  final Value<String> timeFrame;
-  final Value<String> position;
-  final Value<String> winLose;
-  final Value<double> profit;
-  final Value<double> riskRewardRatio;
-  final Value<double> fee;
-  final Value<int?> noteId;
+  final Value<String?> timeFrame;
+  final Value<String?> position;
+  final Value<String?> winLose;
+  final Value<double?> profit;
+  final Value<double?> riskRewardRatio;
+  final Value<double?> fee;
+  final Value<String?> noteDetail;
+  final Value<Uint8List?> beforePicture;
+  final Value<Uint8List?> afterPicture;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   const JournalCompanion({
@@ -1639,37 +1748,33 @@ class JournalCompanion extends UpdateCompanion<JournalData> {
     this.profit = const Value.absent(),
     this.riskRewardRatio = const Value.absent(),
     this.fee = const Value.absent(),
-    this.noteId = const Value.absent(),
+    this.noteDetail = const Value.absent(),
+    this.beforePicture = const Value.absent(),
+    this.afterPicture = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
   });
   JournalCompanion.insert({
     this.id = const Value.absent(),
-    required DateTime date,
-    required String session,
+    this.date = const Value.absent(),
+    this.session = const Value.absent(),
     this.pairId = const Value.absent(),
     this.tradeSetupId = const Value.absent(),
     this.poiId = const Value.absent(),
     this.signalId = const Value.absent(),
     this.pricePatternId = const Value.absent(),
-    required String timeFrame,
-    required String position,
-    required String winLose,
-    required double profit,
-    required double riskRewardRatio,
-    required double fee,
-    this.noteId = const Value.absent(),
+    this.timeFrame = const Value.absent(),
+    this.position = const Value.absent(),
+    this.winLose = const Value.absent(),
+    this.profit = const Value.absent(),
+    this.riskRewardRatio = const Value.absent(),
+    this.fee = const Value.absent(),
+    this.noteDetail = const Value.absent(),
+    this.beforePicture = const Value.absent(),
+    this.afterPicture = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
-  }) : date = Value(date),
-       session = Value(session),
-       timeFrame = Value(timeFrame),
-       position = Value(position),
-       winLose = Value(winLose),
-       profit = Value(profit),
-       riskRewardRatio = Value(riskRewardRatio),
-       fee = Value(fee),
-       createdAt = Value(createdAt),
+  }) : createdAt = Value(createdAt),
        updatedAt = Value(updatedAt);
   static Insertable<JournalData> custom({
     Expression<int>? id,
@@ -1686,7 +1791,9 @@ class JournalCompanion extends UpdateCompanion<JournalData> {
     Expression<double>? profit,
     Expression<double>? riskRewardRatio,
     Expression<double>? fee,
-    Expression<int>? noteId,
+    Expression<String>? noteDetail,
+    Expression<Uint8List>? beforePicture,
+    Expression<Uint8List>? afterPicture,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
   }) {
@@ -1705,7 +1812,9 @@ class JournalCompanion extends UpdateCompanion<JournalData> {
       if (profit != null) 'profit': profit,
       if (riskRewardRatio != null) 'risk_reward_ratio': riskRewardRatio,
       if (fee != null) 'fee': fee,
-      if (noteId != null) 'note_id': noteId,
+      if (noteDetail != null) 'note_detail': noteDetail,
+      if (beforePicture != null) 'before_picture': beforePicture,
+      if (afterPicture != null) 'after_picture': afterPicture,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
     });
@@ -1713,20 +1822,22 @@ class JournalCompanion extends UpdateCompanion<JournalData> {
 
   JournalCompanion copyWith({
     Value<int>? id,
-    Value<DateTime>? date,
-    Value<String>? session,
+    Value<DateTime?>? date,
+    Value<String?>? session,
     Value<int?>? pairId,
     Value<int?>? tradeSetupId,
     Value<int?>? poiId,
     Value<int?>? signalId,
     Value<int?>? pricePatternId,
-    Value<String>? timeFrame,
-    Value<String>? position,
-    Value<String>? winLose,
-    Value<double>? profit,
-    Value<double>? riskRewardRatio,
-    Value<double>? fee,
-    Value<int?>? noteId,
+    Value<String?>? timeFrame,
+    Value<String?>? position,
+    Value<String?>? winLose,
+    Value<double?>? profit,
+    Value<double?>? riskRewardRatio,
+    Value<double?>? fee,
+    Value<String?>? noteDetail,
+    Value<Uint8List?>? beforePicture,
+    Value<Uint8List?>? afterPicture,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
   }) {
@@ -1745,7 +1856,9 @@ class JournalCompanion extends UpdateCompanion<JournalData> {
       profit: profit ?? this.profit,
       riskRewardRatio: riskRewardRatio ?? this.riskRewardRatio,
       fee: fee ?? this.fee,
-      noteId: noteId ?? this.noteId,
+      noteDetail: noteDetail ?? this.noteDetail,
+      beforePicture: beforePicture ?? this.beforePicture,
+      afterPicture: afterPicture ?? this.afterPicture,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -1796,8 +1909,14 @@ class JournalCompanion extends UpdateCompanion<JournalData> {
     if (fee.present) {
       map['fee'] = Variable<double>(fee.value);
     }
-    if (noteId.present) {
-      map['note_id'] = Variable<int>(noteId.value);
+    if (noteDetail.present) {
+      map['note_detail'] = Variable<String>(noteDetail.value);
+    }
+    if (beforePicture.present) {
+      map['before_picture'] = Variable<Uint8List>(beforePicture.value);
+    }
+    if (afterPicture.present) {
+      map['after_picture'] = Variable<Uint8List>(afterPicture.value);
     }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
@@ -1825,7 +1944,9 @@ class JournalCompanion extends UpdateCompanion<JournalData> {
           ..write('profit: $profit, ')
           ..write('riskRewardRatio: $riskRewardRatio, ')
           ..write('fee: $fee, ')
-          ..write('noteId: $noteId, ')
+          ..write('noteDetail: $noteDetail, ')
+          ..write('beforePicture: $beforePicture, ')
+          ..write('afterPicture: $afterPicture, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -4155,40 +4276,44 @@ typedef $$TradeSetupTableProcessedTableManager =
 typedef $$JournalTableCreateCompanionBuilder =
     JournalCompanion Function({
       Value<int> id,
-      required DateTime date,
-      required String session,
+      Value<DateTime?> date,
+      Value<String?> session,
       Value<int?> pairId,
       Value<int?> tradeSetupId,
       Value<int?> poiId,
       Value<int?> signalId,
       Value<int?> pricePatternId,
-      required String timeFrame,
-      required String position,
-      required String winLose,
-      required double profit,
-      required double riskRewardRatio,
-      required double fee,
-      Value<int?> noteId,
+      Value<String?> timeFrame,
+      Value<String?> position,
+      Value<String?> winLose,
+      Value<double?> profit,
+      Value<double?> riskRewardRatio,
+      Value<double?> fee,
+      Value<String?> noteDetail,
+      Value<Uint8List?> beforePicture,
+      Value<Uint8List?> afterPicture,
       required DateTime createdAt,
       required DateTime updatedAt,
     });
 typedef $$JournalTableUpdateCompanionBuilder =
     JournalCompanion Function({
       Value<int> id,
-      Value<DateTime> date,
-      Value<String> session,
+      Value<DateTime?> date,
+      Value<String?> session,
       Value<int?> pairId,
       Value<int?> tradeSetupId,
       Value<int?> poiId,
       Value<int?> signalId,
       Value<int?> pricePatternId,
-      Value<String> timeFrame,
-      Value<String> position,
-      Value<String> winLose,
-      Value<double> profit,
-      Value<double> riskRewardRatio,
-      Value<double> fee,
-      Value<int?> noteId,
+      Value<String?> timeFrame,
+      Value<String?> position,
+      Value<String?> winLose,
+      Value<double?> profit,
+      Value<double?> riskRewardRatio,
+      Value<double?> fee,
+      Value<String?> noteDetail,
+      Value<Uint8List?> beforePicture,
+      Value<Uint8List?> afterPicture,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
     });
@@ -4272,8 +4397,18 @@ class $$JournalTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<int> get noteId => $composableBuilder(
-    column: $table.noteId,
+  ColumnFilters<String> get noteDetail => $composableBuilder(
+    column: $table.noteDetail,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<Uint8List> get beforePicture => $composableBuilder(
+    column: $table.beforePicture,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<Uint8List> get afterPicture => $composableBuilder(
+    column: $table.afterPicture,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -4367,8 +4502,18 @@ class $$JournalTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<int> get noteId => $composableBuilder(
-    column: $table.noteId,
+  ColumnOrderings<String> get noteDetail => $composableBuilder(
+    column: $table.noteDetail,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<Uint8List> get beforePicture => $composableBuilder(
+    column: $table.beforePicture,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<Uint8List> get afterPicture => $composableBuilder(
+    column: $table.afterPicture,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -4440,8 +4585,20 @@ class $$JournalTableAnnotationComposer
   GeneratedColumn<double> get fee =>
       $composableBuilder(column: $table.fee, builder: (column) => column);
 
-  GeneratedColumn<int> get noteId =>
-      $composableBuilder(column: $table.noteId, builder: (column) => column);
+  GeneratedColumn<String> get noteDetail => $composableBuilder(
+    column: $table.noteDetail,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<Uint8List> get beforePicture => $composableBuilder(
+    column: $table.beforePicture,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<Uint8List> get afterPicture => $composableBuilder(
+    column: $table.afterPicture,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -4482,20 +4639,22 @@ class $$JournalTableTableManager
           updateCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
-                Value<DateTime> date = const Value.absent(),
-                Value<String> session = const Value.absent(),
+                Value<DateTime?> date = const Value.absent(),
+                Value<String?> session = const Value.absent(),
                 Value<int?> pairId = const Value.absent(),
                 Value<int?> tradeSetupId = const Value.absent(),
                 Value<int?> poiId = const Value.absent(),
                 Value<int?> signalId = const Value.absent(),
                 Value<int?> pricePatternId = const Value.absent(),
-                Value<String> timeFrame = const Value.absent(),
-                Value<String> position = const Value.absent(),
-                Value<String> winLose = const Value.absent(),
-                Value<double> profit = const Value.absent(),
-                Value<double> riskRewardRatio = const Value.absent(),
-                Value<double> fee = const Value.absent(),
-                Value<int?> noteId = const Value.absent(),
+                Value<String?> timeFrame = const Value.absent(),
+                Value<String?> position = const Value.absent(),
+                Value<String?> winLose = const Value.absent(),
+                Value<double?> profit = const Value.absent(),
+                Value<double?> riskRewardRatio = const Value.absent(),
+                Value<double?> fee = const Value.absent(),
+                Value<String?> noteDetail = const Value.absent(),
+                Value<Uint8List?> beforePicture = const Value.absent(),
+                Value<Uint8List?> afterPicture = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
               }) => JournalCompanion(
@@ -4513,27 +4672,31 @@ class $$JournalTableTableManager
                 profit: profit,
                 riskRewardRatio: riskRewardRatio,
                 fee: fee,
-                noteId: noteId,
+                noteDetail: noteDetail,
+                beforePicture: beforePicture,
+                afterPicture: afterPicture,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
               ),
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
-                required DateTime date,
-                required String session,
+                Value<DateTime?> date = const Value.absent(),
+                Value<String?> session = const Value.absent(),
                 Value<int?> pairId = const Value.absent(),
                 Value<int?> tradeSetupId = const Value.absent(),
                 Value<int?> poiId = const Value.absent(),
                 Value<int?> signalId = const Value.absent(),
                 Value<int?> pricePatternId = const Value.absent(),
-                required String timeFrame,
-                required String position,
-                required String winLose,
-                required double profit,
-                required double riskRewardRatio,
-                required double fee,
-                Value<int?> noteId = const Value.absent(),
+                Value<String?> timeFrame = const Value.absent(),
+                Value<String?> position = const Value.absent(),
+                Value<String?> winLose = const Value.absent(),
+                Value<double?> profit = const Value.absent(),
+                Value<double?> riskRewardRatio = const Value.absent(),
+                Value<double?> fee = const Value.absent(),
+                Value<String?> noteDetail = const Value.absent(),
+                Value<Uint8List?> beforePicture = const Value.absent(),
+                Value<Uint8List?> afterPicture = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
               }) => JournalCompanion.insert(
@@ -4551,7 +4714,9 @@ class $$JournalTableTableManager
                 profit: profit,
                 riskRewardRatio: riskRewardRatio,
                 fee: fee,
-                noteId: noteId,
+                noteDetail: noteDetail,
+                beforePicture: beforePicture,
+                afterPicture: afterPicture,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
               ),

@@ -24,8 +24,8 @@ class JournalService {
     return await journalRepository.insertJournal(data);
   }
 
-  Future<bool> updateJournal(JournalData data) async {
-    return await journalRepository.updateJournal(data);
+  Future<bool> updateJournal(int journalId, JournalCompanion data) async {
+    return await journalRepository.updateJournal(journalId, data);
   }
 
   Future<int> deleteJournal(int id) async {

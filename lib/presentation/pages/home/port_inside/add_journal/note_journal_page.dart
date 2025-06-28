@@ -8,6 +8,7 @@ import 'package:ppjournal/data/local/database.dart';
 import 'package:ppjournal/presentation/widgets/appbar_custom.dart';
 import 'package:ppjournal/providers/journal_provider.dart';
 import 'package:ppjournal/providers/note_provider.dart';
+import 'package:ppjournal/states/journal_note_state.dart';
 
 class NoteJournalPage extends ConsumerStatefulWidget {
   @override
@@ -18,40 +19,57 @@ class _NoteJournalPageState extends ConsumerState<NoteJournalPage> {
   final TextEditingController _noteController = TextEditingController();
   XFile? _beforeImage;
   XFile? _afterImage;
-  DateTime? _createdAt;
   final ImagePicker _picker = ImagePicker();
-
-  Future<void> _pickImage(bool isBefore) async {
+  bool _isInitialized = false;
+  Future<void> _pickImage(bool isBefore, JournalNoteNotifier notifier) async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       setState(() {
         if (isBefore) {
-          _beforeImage = pickedFile;
+          // _beforeImage = pickedFile;
+          notifier.updateBeforeImage(pickedFile);
         } else {
-          _afterImage = pickedFile;
+          // _afterImage = pickedFile;
+          notifier.updateAfterImage(pickedFile);
         }
       });
     }
   }
 
-  Future<void> _insertNote(int? journalId) async {
+  Future<void> _insertNote(int? journalId, JournalNoteState state) async {
     // Implement the logic to insert the note into the database
     // This is where you would typically call your service or repository
     // to save the note along with the images.
     String noteText = _noteController.text;
-    if (noteText.isEmpty && _beforeImage == null && _afterImage == null) {
-      // Show a message or handle the case where no data is provided
-      return;
-    }
 
     drift.Uint8List? beforeBytes;
     drift.Uint8List? afterBytes;
-    if (_beforeImage != null) {
-      beforeBytes = await File(_beforeImage!.path).readAsBytes();
+    if (state.beforeImage != null) {
+      beforeBytes = await File(state.beforeImage!.path).readAsBytes();
     }
-    if (_afterImage != null) {
-      afterBytes = await File(_afterImage!.path).readAsBytes();
+    if (state.afterImage != null) {
+      afterBytes = await File(state.afterImage!.path).readAsBytes();
     }
+
+    if (journalId == null) {
+      final insert = ref.read(journalInsertProvider);
+      print("insert: $insert");
+    } else {
+      final update = ref.watch(journalServiceProvider);
+      final result = await update.updateJournal(
+        journalId,
+        JournalCompanion(
+          noteDetail: drift.Value(noteText),
+          beforePicture: drift.Value(beforeBytes),
+          afterPicture: drift.Value(afterBytes),
+          updatedAt: drift.Value(DateTime.now()),
+        ),
+      );
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Journal saved successfully!')),
+    );
+    ref.invalidate(journalListProvider);
 
     // if (noteId == null) {
     //   final insert = ref.watch(noteServiceProvider);
@@ -85,55 +103,54 @@ class _NoteJournalPageState extends ConsumerState<NoteJournalPage> {
 
   @override
   Widget build(BuildContext context) {
-    final dynamic? state =
-        ModalRoute.of(context)?.settings.arguments as dynamic;
-    int? journalId;
+    final int? journalId = ModalRoute.of(context)?.settings.arguments as int?;
+
     int? noteId;
+    final notifier = ref.watch(journalNoteProvider.notifier);
+    final state = ref.watch(journalNoteProvider);
     // If you need to debug, use debugPrint or a logging framework, and check for keys if state is a Map.
     // Example:
-    if (state is Map && state.containsKey('journalId')) {
-      journalId = state['journalId'] as int?;
-    }
-    if (state is Map && state.containsKey('noteId')) {
-      noteId = state['noteId'] as int?;
-    }
-    print('Journal ID: $journalId, Note ID: $noteId');
 
-    if (noteId != null) {
-      final note = ref.watch(noteByIdProvider(noteId));
-      note.when(
-        data: (note) {
-          if (note != null) {
-            setState(() {
-              _noteController.text = note.detail;
-              _beforeImage =
-                  note.beforePicture != null
-                      ? XFile(
-                        (() {
-                          final tempDir = Directory.systemTemp;
-                          final tempFile = File(
-                            '${tempDir.path}/before_${note.id}.jpg',
-                          );
-                          tempFile.writeAsBytesSync(note.beforePicture!);
-                          return tempFile.path;
-                        })(),
-                      )
-                      : null;
-              _afterImage =
-                  note.afterPicture != null
-                      ? XFile(
-                        (() {
-                          final tempDir = Directory.systemTemp;
-                          final tempFile = File(
-                            '${tempDir.path}/after_${note.id}.jpg',
-                          );
-                          tempFile.writeAsBytesSync(note.afterPicture!);
-                          return tempFile.path;
-                        })(),
-                      )
-                      : null;
-              _createdAt = note.createdAt;
+    print('Journal ID: $journalId');
+
+    if (journalId != null) {
+      final journal = ref.watch(journalByIdProvider(journalId));
+      journal.when(
+        data: (data) {
+          print("data2: ${data?.journal.noteDetail}");
+          if (data != null && !_isInitialized) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              notifier.updateNoteDetail(data.journal.noteDetail ?? '');
+              notifier.updateBeforeImage(
+                data.journal.beforePicture != null
+                    ? XFile(
+                      (() {
+                        final tempDir = Directory.systemTemp;
+                        final tempFile = File(
+                          '${tempDir.path}/before_${data.journal.id}.jpg',
+                        );
+                        tempFile.writeAsBytesSync(data.journal.beforePicture!);
+                        return tempFile.path;
+                      })(),
+                    )
+                    : null,
+              );
+              notifier.updateAfterImage(
+                data.journal.afterPicture != null
+                    ? XFile(
+                      (() {
+                        final tempDir = Directory.systemTemp;
+                        final tempFile = File(
+                          '${tempDir.path}/after_${data.journal.id}.jpg',
+                        );
+                        tempFile.writeAsBytesSync(data.journal.afterPicture!);
+                        return tempFile.path;
+                      })(),
+                    )
+                    : null,
+              );
             });
+            _isInitialized = true;
           }
         },
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -151,7 +168,7 @@ class _NoteJournalPageState extends ConsumerState<NoteJournalPage> {
             onPressed: () {
               // Implement functionality here
               // Navigator.pop(context);
-              _insertNote(journalId);
+              _insertNote(journalId,state);
             },
           ),
         ],
@@ -162,20 +179,21 @@ class _NoteJournalPageState extends ConsumerState<NoteJournalPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TextField(
-              controller: _noteController,
+              controller: TextEditingController(text: state.noteDetail),
               maxLines: 5,
               decoration: InputDecoration(
                 labelText: 'Write your note',
                 border: OutlineInputBorder(),
               ),
+              onSubmitted: (value) => notifier.updateNoteDetail(value),
             ),
             SizedBox(height: 20),
             Text('Before Image:'),
             SizedBox(height: 10),
             GestureDetector(
-              onTap: () => _pickImage(true),
+              onTap: () => _pickImage(true, notifier),
               child:
-                  _beforeImage == null
+                  state.beforeImage == null
                       ? Container(
                         height: 150,
                         width: double.infinity,
@@ -183,7 +201,7 @@ class _NoteJournalPageState extends ConsumerState<NoteJournalPage> {
                         child: Icon(Icons.add_a_photo, size: 50),
                       )
                       : Image.file(
-                        File(_beforeImage!.path),
+                        File(state.beforeImage!.path),
                         height: 150,
                         width: double.infinity,
                         fit: BoxFit.cover,
@@ -193,9 +211,9 @@ class _NoteJournalPageState extends ConsumerState<NoteJournalPage> {
             Text('After Image:'),
             SizedBox(height: 10),
             GestureDetector(
-              onTap: () => _pickImage(false),
+              onTap: () => _pickImage(false, notifier),
               child:
-                  _afterImage == null
+                  state.afterImage == null
                       ? Container(
                         height: 150,
                         width: double.infinity,
@@ -203,7 +221,7 @@ class _NoteJournalPageState extends ConsumerState<NoteJournalPage> {
                         child: Icon(Icons.add_a_photo, size: 50),
                       )
                       : Image.file(
-                        File(_afterImage!.path),
+                        File(state.afterImage!.path),
                         height: 150,
                         width: double.infinity,
                         fit: BoxFit.cover,

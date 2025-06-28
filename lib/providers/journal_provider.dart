@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:ppjournal/data/local/database.dart';
@@ -28,14 +31,45 @@ final journalByIdProvider = FutureProvider.family<JournalFull?, int>((
   return await journalService.getJournalById(id);
 });
 
+final journalInsertProvider = FutureProvider<int>(
+  (ref) async {
+    final state = ref.watch(journalNoteProvider);
+    final journalService = ref.watch(journalServiceProvider);
+    final insertedId = await journalService.insertJournal(JournalCompanion(
+      session: Value(state.sessionTime),
+      pairId: Value(state.currencyPair?.id),
+      tradeSetupId: Value(state.setup?.id),
+      poiId: Value(state.poi?.id),
+      signalId: Value(state.signal?.id),
+      pricePatternId: Value(state.pricePattern?.id),
+      timeFrame: Value(state.timeFrame),
+      position: Value(state.position),
+      winLose: Value(state.winLose),
+      riskRewardRatio: Value(state.rr),
+      fee: Value(state.fee),
+      profit: Value(state.profit),
+      date: Value(state.date ?? DateTime.now()),
+      noteDetail: Value(state.noteDetail),
+      beforePicture: state.beforeImage != null
+          ? Value(await File(state.beforeImage!.path).readAsBytes())
+          : const Value(null),
+      afterPicture: state.afterImage != null
+          ? Value(await File(state.afterImage!.path).readAsBytes())
+          : const Value(null),
+      createdAt: Value(DateTime.now()),
+      updatedAt: Value(DateTime.now()),
+    ));
+    return insertedId;
+  },
+);
 
 class JournalNoteNotifier extends StateNotifier<JournalNoteState> {
   JournalNoteNotifier() : super(JournalNoteState());
 
-  void updateSessionTime(String value) =>
+  void updateSessionTime(String? value) =>
       state = state.copyWith(sessionTime: value);
 
-  void updateCurrencyPair(DataItem value) =>
+  void updateCurrencyPair(DataItem? value) =>
       state = state.copyWith(currencyPair: value);
 
   void updateSetup(DataItem? value) =>
@@ -71,7 +105,7 @@ class JournalNoteNotifier extends StateNotifier<JournalNoteState> {
   void updateDate(DateTime? value) =>
       state = state.copyWith(date: value);
 
-  void updateNoteDetail(String value) =>
+  void updateNoteDetail(String? value) =>
       state = state.copyWith(noteDetail: value);
 
   void updateBeforeImage(XFile? value) =>

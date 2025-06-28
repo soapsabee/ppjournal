@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -28,7 +30,6 @@ class _AddJournalPageState extends ConsumerState<AddJournalPage> {
   String? selectedTimeFrame;
   String? selectedPosition;
   String? selectedWinLoss;
-  DateTime? createdAt;
   bool _isInitialized = false;
   int? _noteId;
 
@@ -41,12 +42,12 @@ class _AddJournalPageState extends ConsumerState<AddJournalPage> {
     super.dispose();
   }
 
-  void _saveJournal(int? journalId) {
+  Future<void> _saveJournal(int? journalId) async {
     if (_formKey.currentState!.validate()) {
-      final double rr = double.tryParse(_riskRewardRatioController.text) ?? 0.0;
-      final double fee = double.tryParse(_feeController.text) ?? 0.0;
-      final double profit = double.tryParse(_profitController.text) ?? 0.0;
-      final insert = ref.watch(journalServiceProvider);
+      final state = ref.watch(journalNoteProvider);
+      // final double rr = double.tryParse(_riskRewardRatioController.text) ?? 0.0;
+      // final double fee = double.tryParse(_feeController.text) ?? 0.0;
+      // final double profit = double.tryParse(_profitController.text) ?? 0.0;
       DateTime? getSelectedTradeDate() {
         String text = _tradeDateController.text;
         if (text.isEmpty) return null;
@@ -60,68 +61,68 @@ class _AddJournalPageState extends ConsumerState<AddJournalPage> {
 
       DateTime? tradeDate = getSelectedTradeDate();
 
+      final beforePictureBytes =
+          state.beforeImage != null
+              ? await File(state.beforeImage!.path).readAsBytes()
+              : null;
+      final afterPictureBytes =
+          state.afterImage != null
+              ? await File(state.afterImage!.path).readAsBytes()
+              : null;
       if (journalId != null) {
         // Update existing journal entry
         print('Updating journal with ID: $journalId');
 
         final update = ref.watch(journalServiceProvider);
-        final result = update.updateJournal(
-          JournalData(
-            id: journalId,
-            date: tradeDate ?? DateTime.now(),
-            session: selectedSessionTime ?? '',
-            pairId: selectedPair?.id ?? 0,
-            tradeSetupId: selectedSetup?.id ?? 0,
-            poiId: selectedPoi?.id ?? 0,
-            signalId: selectedSignal?.id ?? 0,
-            pricePatternId: selectedPricePattern?.id ?? 0,
-            timeFrame: selectedTimeFrame ?? '',
-            position: selectedPosition ?? '',
-            winLose: selectedWinLoss ?? '',
-            riskRewardRatio: rr,
-            fee: fee,
-            profit: profit,
-            createdAt: createdAt != null ? createdAt! : DateTime.now(),
-            updatedAt: DateTime.now(),
-          ),
-        );
-      } else {
-        // Insert new journal entry
-        insert.insertJournal(
+
+        update.updateJournal(
+          journalId,
           JournalCompanion(
-            date: drift.Value(tradeDate ?? DateTime.now()),
-            session: drift.Value(selectedSessionTime ?? ''),
-            pairId: drift.Value(selectedPair?.id ?? 0),
-            tradeSetupId: drift.Value(selectedSetup?.id ?? 0),
-            poiId: drift.Value(selectedPoi?.id ?? 0),
-            signalId: drift.Value(selectedSignal?.id ?? 0),
-            pricePatternId: drift.Value(selectedPricePattern?.id ?? 0),
-            timeFrame: drift.Value(selectedTimeFrame ?? ''),
-            position: drift.Value(selectedPosition ?? ''),
-            winLose: drift.Value(selectedWinLoss ?? ''),
-            riskRewardRatio: drift.Value(rr),
-            fee: drift.Value(fee),
-            profit: drift.Value(profit),
-            createdAt: drift.Value(DateTime.now()),
+            date: drift.Value(state.date),
+            session: drift.Value(state.sessionTime),
+            pairId: drift.Value(state.currencyPair?.id),
+            tradeSetupId: drift.Value(state.setup?.id),
+            poiId: drift.Value(state.poi?.id),
+            signalId: drift.Value(state.signal?.id),
+            pricePatternId: drift.Value(state.pricePattern?.id ?? 0),
+            timeFrame: drift.Value(state.timeFrame ?? ''),
+            position: drift.Value(state.position ?? ''),
+            winLose: drift.Value(state.winLose ?? ''),
+            riskRewardRatio: drift.Value(state.rr),
+            fee: drift.Value(state.fee),
+            profit: drift.Value(state.profit),
+            noteDetail: drift.Value(state.noteDetail ?? ''),
+            beforePicture: drift.Value(beforePictureBytes),
+            afterPicture: drift.Value(afterPictureBytes),
+            // createdAt: drift.Value(createdAt ?? DateTime.now()),
             updatedAt: drift.Value(DateTime.now()),
           ),
         );
+        // final result = update.updateJournal(
+        //   JournalCompanion(
+        //     id: journalId,
+        //     date: drift.Value(state.date),
+        //     session: drift.Value(state.sessionTime ?? ''),
+        //     pairId: drift.Value(state.currencyPair?.id ?? 0),
+        //     tradeSetupId: drift.Value(state.setup?.id ?? 0),
+        //     poiId: drift.Value(state.poi?.id ?? 0),
+        //     signalId: drift.Value(state.signal?.id ?? 0),
+        //     pricePatternId: state.pricePattern?.id ?? 0,
+        //     timeFrame: state.timeFrame ?? '',
+        //     position: state.position ?? '',
+        //     winLose: state.winLose ?? '',
+        //     riskRewardRatio: rr,
+        //     fee: fee,
+        //     profit: profit,
+        //     // createdAt: createdAt != null ? createdAt! : DateTime.now(),
+        //     updatedAt: DateTime.now(),
+        //   ),
+        // );
+      } else {
+        // Insert new journal entry
+        final insert = ref.read(journalInsertProvider);
+        print("insert: $insert");
       }
-
-      print('--- Journal Entry ---');
-      print('Date: $tradeDate');
-      print('Session: $selectedSessionTime');
-      print('Pair: ${selectedPair?.id}');
-      print('Setup: ${selectedSetup?.id}');
-      print('POI: ${selectedPoi?.id}');
-      print('Signal: ${selectedSignal?.id}');
-      print('Price Pattern: ${selectedPricePattern?.id}');
-      print('Time Frame: $selectedTimeFrame');
-      print('Position: $selectedPosition');
-      print('Win/Loss: $selectedWinLoss');
-      print('RR: $rr');
-      print('Fee: $fee');
-      print('Profit: $profit');
 
       // Save the journal logic here
       ScaffoldMessenger.of(context).showSnackBar(
@@ -144,41 +145,90 @@ class _AddJournalPageState extends ConsumerState<AddJournalPage> {
     final state = ref.watch(journalNoteProvider);
     final notifier = ref.watch(journalNoteProvider.notifier);
 
-    print("state: ${state.sessionTime}");
     final int? journalId = ModalRoute.of(context)?.settings.arguments as int?;
-    print('Journal ID: $journalId');
+
     if (journalId != null) {
       // Load existing journal data if editing
       final journal = ref.watch(journalByIdProvider(journalId));
+      print("journalId: $journalId");
       journal.when(
         data: (data) {
-          if (data != null && !_isInitialized) {
-            _tradeDateController.text =
-                data.journal.date.toIso8601String().split('T')[0];
-            selectedSessionTime = data.journal.session;
-            selectedPair = DataItem(id: data.pair.id, name: data.pair.name);
-            selectedSetup = DataItem(id: data.setup.id, name: data.setup.name);
-            selectedPoi = DataItem(id: data.poi.id, name: data.poi.name);
-            selectedSignal = DataItem(
-              id: data.signal.id,
-              name: data.signal.name,
-            );
-            selectedPricePattern = DataItem(
-              id: data.pricePattern.id,
-              name: data.pricePattern.name,
-            );
-            selectedTimeFrame = data.journal.timeFrame;
-            selectedPosition = data.journal.position;
-            selectedWinLoss = data.journal.winLose;
-            _riskRewardRatioController.text =
-                data.journal.riskRewardRatio.toString();
-            _feeController.text = data.journal.fee.toString();
-            _profitController.text = data.journal.profit.toString();
-            createdAt = data.journal.createdAt;
-            _noteId = data.journal.noteId;
-            _isInitialized = true; // ✅ Only run once
+          print("data: $data");
 
-            print("_noteId: ${data.journal.noteId}");
+          if (data != null && !_isInitialized) {
+            // _tradeDateController.text =
+            //     data.journal.date.toIso8601String().split('T')[0];
+            // notifier.updateDate(data.journal.date);
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              notifier.updateDate(data.journal.date);
+              notifier.updateSessionTime(data.journal.session);
+              notifier.updateCurrencyPair(
+                DataItem(id: data.pair?.id ?? 0, name: data.pair?.name ?? ''),
+              );
+              notifier.updateSetup(
+                DataItem(id: data.setup?.id ?? 0, name: data.setup?.name ?? ''),
+              );
+              notifier.updatePoi(
+                DataItem(id: data.poi?.id ?? 0, name: data.poi?.name ?? ''),
+              );
+              notifier.updateSignal(
+                DataItem(
+                  id: data.signal?.id ?? 0,
+                  name: data.signal?.name ?? '',
+                ),
+              );
+              notifier.updatePricePattern(
+                DataItem(
+                  id: data.pricePattern?.id ?? 0,
+                  name: data.pricePattern?.name ?? '',
+                ),
+              );
+              notifier.updateTimeFrame(data.journal.timeFrame);
+              notifier.updatePosition(data.journal.position);
+              notifier.updateWinLose(data.journal.winLose);
+              notifier.updateRR(data.journal.riskRewardRatio);
+              notifier.updateFee(data.journal.fee);
+              notifier.updateProfit(data.journal.profit);
+              notifier.updateSetup(
+                DataItem(id: data.setup?.id ?? 0, name: data.setup?.name ?? ''),
+              );
+              notifier.updatePoi(
+                DataItem(id: data.poi?.id ?? 0, name: data.poi?.name ?? ''),
+              );
+              notifier.updateSignal(
+                DataItem(
+                  id: data.signal?.id ?? 0,
+                  name: data.signal?.name ?? '',
+                ),
+              );
+              notifier.updatePricePattern(
+                DataItem(
+                  id: data.pricePattern?.id ?? 0,
+                  name: data.pricePattern?.name ?? '',
+                ),
+              );
+            });
+            // selectedSessionTime = data.journal.session;
+            // selectedPair = DataItem(id: data.pair.id, name: data.pair.name);
+            // selectedSetup = DataItem(id: data.setup.id, name: data.setup.name);
+            // selectedPoi = DataItem(id: data.poi.id, name: data.poi.name);
+            // selectedSignal = DataItem(
+            //   id: data.signal.id,
+            //   name: data.signal.name,
+            // );
+            // selectedPricePattern = DataItem(
+            //   id: data.pricePattern.id,
+            //   name: data.pricePattern.name,
+            // );
+            // selectedTimeFrame = data.journal.timeFrame;
+            // selectedPosition = data.journal.position;
+            // selectedWinLoss = data.journal.winLose;
+            // _riskRewardRatioController.text =
+            //     data.journal.riskRewardRatio.toString();
+            // _feeController.text = data.journal.fee.toString();
+            // _profitController.text = data.journal.profit.toString();
+            // _noteId = data.journal.noteId;
+            _isInitialized = true; // ✅ Only run once
           }
         },
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -198,7 +248,7 @@ class _AddJournalPageState extends ConsumerState<AddJournalPage> {
               Navigator.pushNamed(
                 context,
                 '/note-journal-page',
-                arguments: {"journalId": journalId, "noteId": _noteId},
+                arguments: journalId,
               );
             },
           ),
@@ -221,9 +271,14 @@ class _AddJournalPageState extends ConsumerState<AddJournalPage> {
                 const SizedBox(height: 16.0),
                 _buildSectionTitle('Trade Details'),
                 const SizedBox(height: 8.0),
-                _buildDateField("Trade Date", _tradeDateController, state.date, (date) {
-                  notifier.updateDate(date);
-                }),
+                _buildDateField(
+                  "Trade Date",
+                  _tradeDateController,
+                  state.date,
+                  (date) {
+                    notifier.updateDate(date);
+                  },
+                ),
                 const SizedBox(height: 16.0),
                 _buildDropdownField(
                   'Session Time',
@@ -298,7 +353,7 @@ class _AddJournalPageState extends ConsumerState<AddJournalPage> {
                   ),
                   state.poi,
                   (value) {
-                   notifier.updatePoi(value as DataItem?);
+                    notifier.updatePoi(value as DataItem?);
                   },
                 ),
                 const SizedBox(height: 16.0),
@@ -377,15 +432,19 @@ class _AddJournalPageState extends ConsumerState<AddJournalPage> {
                 const SizedBox(height: 16.0),
                 _buildSectionTitle('Trade Metrics'),
                 const SizedBox(height: 8.0),
-                _buildNumberField('RR', _riskRewardRatioController, state.rr, (value) {
+                _buildNumberField('RR', _riskRewardRatioController, state.rr, (
+                  value,
+                ) {
                   notifier.updateRR(value);
                 }),
                 const SizedBox(height: 16.0),
-                _buildNumberField('Fee', _feeController, state.fee,  (value) {
+                _buildNumberField('Fee', _feeController, state.fee, (value) {
                   notifier.updateFee(value);
                 }),
                 const SizedBox(height: 16.0),
-                _buildNumberField('Profit', _profitController, state.profit, (value) {
+                _buildNumberField('Profit', _profitController, state.profit, (
+                  value,
+                ) {
                   notifier.updateProfit(value);
                 }),
                 const SizedBox(height: 16.0),
@@ -403,7 +462,8 @@ class _AddJournalPageState extends ConsumerState<AddJournalPage> {
     DateTime? value,
     void Function(DateTime? date) onDateSelected,
   ) {
-    controller.text = "${value?.toLocal()}".split(' ')[0];
+    print("value: $value");
+    controller.text = value != null ? "${value?.toLocal()}".split(' ')[0] : '';
     return TextFormField(
       controller: controller,
       decoration: const InputDecoration(
@@ -432,9 +492,11 @@ class _AddJournalPageState extends ConsumerState<AddJournalPage> {
     void Function(T?)? onChanged,
   ) {
     final List<T> dropdownItems = [...items];
+    final T? validatedValue =
+        dropdownItems.contains(selectedValue) ? selectedValue : null;
 
     return DropdownButtonFormField<T>(
-      value: selectedValue,
+      value: validatedValue,
       decoration: InputDecoration(
         labelText: label,
         border: const OutlineInputBorder(),
@@ -473,7 +535,12 @@ class _AddJournalPageState extends ConsumerState<AddJournalPage> {
     );
   }
 
-  _buildNumberField<T>(String label, TextEditingController controller, T? selectedValue, void Function(double? value)? onChanged) {
+  _buildNumberField<T>(
+    String label,
+    TextEditingController controller,
+    T? selectedValue,
+    void Function(double? value)? onChanged,
+  ) {
     controller.text = selectedValue?.toString() ?? '';
     return TextFormField(
       controller: controller,

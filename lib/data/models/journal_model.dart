@@ -2,11 +2,11 @@ import 'package:ppjournal/data/local/database.dart';
 
 class JournalFull {
   final JournalData journal;
-  final TradeSetupData setup;
-  final PoiData poi;
-  final SignalData signal;
-  final CurrencyPair pair;
-  final PricePatternData pricePattern;
+  final TradeSetupData? setup;
+  final PoiData? poi;
+  final SignalData? signal;
+  final CurrencyPair? pair;
+  final PricePatternData? pricePattern;
 
   JournalFull({
     required this.journal,
