@@ -16,9 +16,22 @@ class NoteJournalPage extends ConsumerStatefulWidget {
 }
 
 class _NoteJournalPageState extends ConsumerState<NoteJournalPage> {
-  final TextEditingController _noteController = TextEditingController();
-  XFile? _beforeImage;
-  XFile? _afterImage;
+  late final TextEditingController _noteController;
+
+  @override
+  void initState() {
+    super.initState();
+    _noteController = TextEditingController(
+      text: ref.read(journalNoteProvider).noteDetail,
+    );
+  }
+
+  @override
+  void dispose() {
+    _noteController.dispose();
+    super.dispose();
+  }
+
   final ImagePicker _picker = ImagePicker();
   bool _isInitialized = false;
   Future<void> _pickImage(bool isBefore, JournalNoteNotifier notifier) async {
@@ -36,12 +49,16 @@ class _NoteJournalPageState extends ConsumerState<NoteJournalPage> {
     }
   }
 
-  Future<void> _insertNote(int? journalId, JournalNoteState state) async {
+  Future<void> _insertNote(
+    int? journalId,
+    JournalNoteState state,
+    JournalNoteNotifier notifier,
+  ) async {
     // Implement the logic to insert the note into the database
     // This is where you would typically call your service or repository
     // to save the note along with the images.
     String noteText = _noteController.text;
-
+    notifier.updateNoteDetail(noteText);
     drift.Uint8List? beforeBytes;
     drift.Uint8List? afterBytes;
     if (state.beforeImage != null) {
@@ -52,19 +69,18 @@ class _NoteJournalPageState extends ConsumerState<NoteJournalPage> {
     }
 
     if (journalId == null) {
-      final insert = ref.read(journalInsertProvider);
-      print("insert: $insert");
+      final insert = await ref.read(journalInsertProvider.future);
+      notifier.updateId(insert);
     } else {
-      final update = ref.watch(journalServiceProvider);
-      final result = await update.updateJournal(
-        journalId,
-        JournalCompanion(
-          noteDetail: drift.Value(noteText),
-          beforePicture: drift.Value(beforeBytes),
-          afterPicture: drift.Value(afterBytes),
-          updatedAt: drift.Value(DateTime.now()),
-        ),
-      );
+      print("testupdate: ${state.noteDetail}");
+      final update = await ref.read(journalUpdateProvider.future);
+      if (!update) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to update journal')),
+        );
+        return;
+      }
+      ref.invalidate(journalByIdProvider(journalId));
     }
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Journal saved successfully!')),
@@ -103,11 +119,10 @@ class _NoteJournalPageState extends ConsumerState<NoteJournalPage> {
 
   @override
   Widget build(BuildContext context) {
-    final int? journalId = ModalRoute.of(context)?.settings.arguments as int?;
-
     int? noteId;
     final notifier = ref.watch(journalNoteProvider.notifier);
     final state = ref.watch(journalNoteProvider);
+    final int? journalId = state.id;
     // If you need to debug, use debugPrint or a logging framework, and check for keys if state is a Map.
     // Example:
 
@@ -120,7 +135,8 @@ class _NoteJournalPageState extends ConsumerState<NoteJournalPage> {
           print("data2: ${data?.journal.noteDetail}");
           if (data != null && !_isInitialized) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              notifier.updateNoteDetail(data.journal.noteDetail ?? '');
+              _noteController.text = data.journal.noteDetail ?? '';
+              // notifier.updateNoteDetail(data.journal.noteDetail ?? '');
               notifier.updateBeforeImage(
                 data.journal.beforePicture != null
                     ? XFile(
@@ -168,7 +184,7 @@ class _NoteJournalPageState extends ConsumerState<NoteJournalPage> {
             onPressed: () {
               // Implement functionality here
               // Navigator.pop(context);
-              _insertNote(journalId,state);
+              _insertNote(journalId, state, notifier);
             },
           ),
         ],
@@ -178,14 +194,13 @@ class _NoteJournalPageState extends ConsumerState<NoteJournalPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            TextField(
-              controller: TextEditingController(text: state.noteDetail),
+            TextFormField(
+              controller: _noteController,
               maxLines: 5,
               decoration: InputDecoration(
                 labelText: 'Write your note',
                 border: OutlineInputBorder(),
               ),
-              onSubmitted: (value) => notifier.updateNoteDetail(value),
             ),
             SizedBox(height: 20),
             Text('Before Image:'),

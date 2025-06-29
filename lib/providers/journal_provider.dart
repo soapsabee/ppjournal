@@ -34,6 +34,7 @@ final journalByIdProvider = FutureProvider.family<JournalFull?, int>((
 final journalInsertProvider = FutureProvider<int>(
   (ref) async {
     final state = ref.watch(journalNoteProvider);
+    print("state: ${state.noteDetail}");
     final journalService = ref.watch(journalServiceProvider);
     final insertedId = await journalService.insertJournal(JournalCompanion(
       session: Value(state.sessionTime),
@@ -48,7 +49,7 @@ final journalInsertProvider = FutureProvider<int>(
       riskRewardRatio: Value(state.rr),
       fee: Value(state.fee),
       profit: Value(state.profit),
-      date: Value(state.date ?? DateTime.now()),
+      date: Value(state.date),
       noteDetail: Value(state.noteDetail),
       beforePicture: state.beforeImage != null
           ? Value(await File(state.beforeImage!.path).readAsBytes())
@@ -63,8 +64,50 @@ final journalInsertProvider = FutureProvider<int>(
   },
 );
 
+final journalUpdateProvider = FutureProvider<bool>(
+  (ref) async {
+            print("comein");
+
+    final state = ref.watch(journalNoteProvider);
+    if (state.id == null) {
+      throw Exception("Journal ID is null, cannot update.");
+    }
+    final journalService = ref.watch(journalServiceProvider);
+    final updatedRows = await journalService.updateJournal(
+      state.id!,
+      JournalCompanion(
+        session: Value(state.sessionTime),
+        pairId: Value(state.currencyPair?.id),
+        tradeSetupId: Value(state.setup?.id),
+        poiId: Value(state.poi?.id),
+        signalId: Value(state.signal?.id),
+        pricePatternId: Value(state.pricePattern?.id),
+        timeFrame: Value(state.timeFrame),
+        position: Value(state.position),
+        winLose: Value(state.winLose),
+        riskRewardRatio: Value(state.rr),
+        fee: Value(state.fee),
+        profit: Value(state.profit),
+        date: Value(state.date),
+        noteDetail: Value(state.noteDetail),
+        beforePicture: state.beforeImage != null
+            ? Value(await File(state.beforeImage!.path).readAsBytes())
+            : const Value(null),
+        afterPicture: state.afterImage != null
+            ? Value(await File(state.afterImage!.path).readAsBytes())
+            : const Value(null),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
+    return updatedRows;
+  },
+);
+
 class JournalNoteNotifier extends StateNotifier<JournalNoteState> {
   JournalNoteNotifier() : super(JournalNoteState());
+
+  void updateId(int? value) =>
+      state = state.copyWith(id: value);
 
   void updateSessionTime(String? value) =>
       state = state.copyWith(sessionTime: value);

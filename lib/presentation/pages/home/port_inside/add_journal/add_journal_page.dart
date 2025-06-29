@@ -61,67 +61,35 @@ class _AddJournalPageState extends ConsumerState<AddJournalPage> {
 
       DateTime? tradeDate = getSelectedTradeDate();
 
-      final beforePictureBytes =
-          state.beforeImage != null
-              ? await File(state.beforeImage!.path).readAsBytes()
-              : null;
-      final afterPictureBytes =
-          state.afterImage != null
-              ? await File(state.afterImage!.path).readAsBytes()
-              : null;
+      // final beforePictureBytes =
+      //     state.beforeImage != null
+      //         ? await File(state.beforeImage!.path).readAsBytes()
+      //         : null;
+      // final afterPictureBytes =
+      //     state.afterImage != null
+      //         ? await File(state.afterImage!.path).readAsBytes()
+      //         : null;
       if (journalId != null) {
         // Update existing journal entry
         print('Updating journal with ID: $journalId');
 
-        final update = ref.watch(journalServiceProvider);
-
-        update.updateJournal(
-          journalId,
-          JournalCompanion(
-            date: drift.Value(state.date),
-            session: drift.Value(state.sessionTime),
-            pairId: drift.Value(state.currencyPair?.id),
-            tradeSetupId: drift.Value(state.setup?.id),
-            poiId: drift.Value(state.poi?.id),
-            signalId: drift.Value(state.signal?.id),
-            pricePatternId: drift.Value(state.pricePattern?.id ?? 0),
-            timeFrame: drift.Value(state.timeFrame ?? ''),
-            position: drift.Value(state.position ?? ''),
-            winLose: drift.Value(state.winLose ?? ''),
-            riskRewardRatio: drift.Value(state.rr),
-            fee: drift.Value(state.fee),
-            profit: drift.Value(state.profit),
-            noteDetail: drift.Value(state.noteDetail ?? ''),
-            beforePicture: drift.Value(beforePictureBytes),
-            afterPicture: drift.Value(afterPictureBytes),
-            // createdAt: drift.Value(createdAt ?? DateTime.now()),
-            updatedAt: drift.Value(DateTime.now()),
-          ),
-        );
-        // final result = update.updateJournal(
-        //   JournalCompanion(
-        //     id: journalId,
-        //     date: drift.Value(state.date),
-        //     session: drift.Value(state.sessionTime ?? ''),
-        //     pairId: drift.Value(state.currencyPair?.id ?? 0),
-        //     tradeSetupId: drift.Value(state.setup?.id ?? 0),
-        //     poiId: drift.Value(state.poi?.id ?? 0),
-        //     signalId: drift.Value(state.signal?.id ?? 0),
-        //     pricePatternId: state.pricePattern?.id ?? 0,
-        //     timeFrame: state.timeFrame ?? '',
-        //     position: state.position ?? '',
-        //     winLose: state.winLose ?? '',
-        //     riskRewardRatio: rr,
-        //     fee: fee,
-        //     profit: profit,
-        //     // createdAt: createdAt != null ? createdAt! : DateTime.now(),
-        //     updatedAt: DateTime.now(),
-        //   ),
-        // );
+        final update = await ref.read(journalUpdateProvider.future);
+        if (!update) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to update journal')),
+          );
+          return;
+        }
+        ref.invalidate(journalByIdProvider(journalId));
       } else {
         // Insert new journal entry
-        final insert = ref.read(journalInsertProvider);
-        print("insert: $insert");
+        final insert = await ref.read(journalInsertProvider.future);
+        if (insert == 0) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to save journal')),
+          );
+          return;
+        }
       }
 
       // Save the journal logic here
@@ -145,7 +113,7 @@ class _AddJournalPageState extends ConsumerState<AddJournalPage> {
     final state = ref.watch(journalNoteProvider);
     final notifier = ref.watch(journalNoteProvider.notifier);
 
-    final int? journalId = ModalRoute.of(context)?.settings.arguments as int?;
+    final int? journalId = state.id;
 
     if (journalId != null) {
       // Load existing journal data if editing
@@ -153,9 +121,9 @@ class _AddJournalPageState extends ConsumerState<AddJournalPage> {
       print("journalId: $journalId");
       journal.when(
         data: (data) {
-          print("data: $data");
-
           if (data != null && !_isInitialized) {
+            print("data1: ${data.journal.date}");
+
             // _tradeDateController.text =
             //     data.journal.date.toIso8601String().split('T')[0];
             // notifier.updateDate(data.journal.date);

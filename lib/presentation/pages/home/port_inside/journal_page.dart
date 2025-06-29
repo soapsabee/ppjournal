@@ -164,10 +164,11 @@ class _JournalPageState extends ConsumerState<JournalPage> {
               children: [
                 IconButton(
                   onPressed: () => {
+                    ref.invalidate(journalNoteProvider), // Reset state when view a journal
+                    ref.read(journalNoteProvider.notifier).updateId(entry.journal.id),
                     Navigator.pushNamed(
                       context,
-                      '/note-journal-page',
-                      // arguments: entry.journal.noteId,
+                      '/note-journal-page'
                     )
                   },
                   icon: Icon(Icons.note),
@@ -176,10 +177,10 @@ class _JournalPageState extends ConsumerState<JournalPage> {
                 IconButton(
                   onPressed: () => {
                     ref.invalidate(journalNoteProvider), // Reset state when adding a new journal
+                    ref.read(journalNoteProvider.notifier).updateId(entry.journal.id),
                     Navigator.pushNamed(
                       context,
-                      '/add-journal-page',
-                      arguments: entry.journal.id,
+                      '/add-journal-page'
                     )
                   },
                   icon: Icon(Icons.edit),

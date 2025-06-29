@@ -19,6 +19,7 @@ class DataItem {
 }
 
 class JournalNoteState {
+  final int? id;
   final String? sessionTime;
   final DataItem? currencyPair;
   final DataItem? setup;
@@ -38,6 +39,7 @@ class JournalNoteState {
   final XFile? afterImage;
 
   JournalNoteState({
+    this.id,
     this.sessionTime,
     this.currencyPair,
     this.setup,
@@ -58,6 +60,7 @@ class JournalNoteState {
   }) : createdAt = createdAt ?? DateTime.now();
 
   JournalNoteState copyWith({
+    int? id,
     String? sessionTime,
     DataItem? currencyPair,
     DataItem? setup,
@@ -77,6 +80,7 @@ class JournalNoteState {
     XFile? afterImage,
   }) {
     return JournalNoteState(
+      id: id ?? this.id,
       sessionTime: sessionTime ?? this.sessionTime,
       currencyPair: currencyPair ?? this.currencyPair,
       setup: setup ?? this.setup,
