@@ -20,6 +20,7 @@ class DataItem {
 
 class JournalNoteState {
   final int? id;
+  final int portId;
   final String? sessionTime;
   final DataItem? currencyPair;
   final DataItem? setup;
@@ -40,6 +41,7 @@ class JournalNoteState {
 
   JournalNoteState({
     this.id,
+    this.portId = 0,
     this.sessionTime,
     this.currencyPair,
     this.setup,
@@ -61,6 +63,7 @@ class JournalNoteState {
 
   JournalNoteState copyWith({
     int? id,
+    int? portId,
     String? sessionTime,
     DataItem? currencyPair,
     DataItem? setup,
@@ -81,6 +84,7 @@ class JournalNoteState {
   }) {
     return JournalNoteState(
       id: id ?? this.id,
+      portId: portId ?? this.portId,
       sessionTime: sessionTime ?? this.sessionTime,
       currencyPair: currencyPair ?? this.currencyPair,
       setup: setup ?? this.setup,

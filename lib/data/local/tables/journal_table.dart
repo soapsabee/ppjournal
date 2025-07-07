@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 
 class Journal extends Table {
   IntColumn get id => integer().autoIncrement()();
+  IntColumn get portId => integer().customConstraint('REFERENCES port(id)')();
   DateTimeColumn get date => dateTime().nullable()();
   TextColumn get session => text().nullable()();
   IntColumn get pairId => integer().nullable()();

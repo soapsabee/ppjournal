@@ -41,6 +41,7 @@ dependencies:
   path_provider: ^2.1.5
   path: ^1.9.1
   flutter_riverpod: ^2.6.1
+  widget_zoom: ^0.0.4
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -9,6 +9,7 @@ import 'package:ppjournal/presentation/widgets/appbar_custom.dart';
 import 'package:ppjournal/providers/journal_provider.dart';
 import 'package:ppjournal/providers/note_provider.dart';
 import 'package:ppjournal/states/journal_note_state.dart';
+import 'package:widget_zoom/widget_zoom.dart';
 
 class NoteJournalPage extends ConsumerStatefulWidget {
   @override
@@ -34,7 +35,15 @@ class _NoteJournalPageState extends ConsumerState<NoteJournalPage> {
 
   final ImagePicker _picker = ImagePicker();
   bool _isInitialized = false;
+  bool _isView = false;
   Future<void> _pickImage(bool isBefore, JournalNoteNotifier notifier) async {
+    if (_isView) {
+      // If the page is in view mode, do not allow image picking
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Cannot pick images in view mode')),
+      );
+      return;
+    }
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       setState(() {
@@ -123,6 +132,11 @@ class _NoteJournalPageState extends ConsumerState<NoteJournalPage> {
     final notifier = ref.watch(journalNoteProvider.notifier);
     final state = ref.watch(journalNoteProvider);
     final int? journalId = state.id;
+    final routeName = ModalRoute.of(context)?.settings.name;
+    if (routeName == "/view-note-journal-page") {
+      _isView = true;
+    }
+    print("routeName: $routeName");
     // If you need to debug, use debugPrint or a logging framework, and check for keys if state is a Map.
     // Example:
 
@@ -179,14 +193,16 @@ class _NoteJournalPageState extends ConsumerState<NoteJournalPage> {
         title: "Note",
         shouldShowLeading: true,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.save, color: Colors.white),
-            onPressed: () {
-              // Implement functionality here
-              // Navigator.pop(context);
-              _insertNote(journalId, state, notifier);
-            },
-          ),
+          _isView
+              ? Container()
+              : IconButton(
+                icon: const Icon(Icons.save, color: Colors.white),
+                onPressed: () {
+                  // Implement functionality here
+                  // Navigator.pop(context);
+                  _insertNote(journalId, state, notifier);
+                },
+              ),
         ],
       ),
       body: Padding(
@@ -196,6 +212,7 @@ class _NoteJournalPageState extends ConsumerState<NoteJournalPage> {
           children: [
             TextFormField(
               controller: _noteController,
+              readOnly: _isView,
               maxLines: 5,
               decoration: InputDecoration(
                 labelText: 'Write your note',
@@ -215,11 +232,14 @@ class _NoteJournalPageState extends ConsumerState<NoteJournalPage> {
                         color: Colors.grey[300],
                         child: Icon(Icons.add_a_photo, size: 50),
                       )
-                      : Image.file(
-                        File(state.beforeImage!.path),
-                        height: 150,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
+                      : WidgetZoom(
+                        heroAnimationTag: "beforeImage",
+                        zoomWidget: Image.file(
+                          File(state.beforeImage!.path),
+                          height: 150,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        ),
                       ),
             ),
             SizedBox(height: 20),
@@ -235,11 +255,14 @@ class _NoteJournalPageState extends ConsumerState<NoteJournalPage> {
                         color: Colors.grey[300],
                         child: Icon(Icons.add_a_photo, size: 50),
                       )
-                      : Image.file(
-                        File(state.afterImage!.path),
-                        height: 150,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
+                      : WidgetZoom(
+                        heroAnimationTag: "afterImage",
+                        zoomWidget: Image.file(
+                          File(state.afterImage!.path),
+                          height: 150,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        ),
                       ),
             ),
             Spacer(),

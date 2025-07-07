@@ -4,6 +4,7 @@ import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:ppjournal/data/local/database.dart';
+import 'package:ppjournal/data/models/dashboard_model.dart';
 import 'package:ppjournal/data/models/journal_model.dart';
 import 'package:ppjournal/data/repositories/journal_repository.dart';
 import 'package:ppjournal/services/journal_service.dart';
@@ -102,6 +103,7 @@ final journalUpdateProvider = FutureProvider<bool>(
     return updatedRows;
   },
 );
+
 
 class JournalNoteNotifier extends StateNotifier<JournalNoteState> {
   JournalNoteNotifier() : super(JournalNoteState());

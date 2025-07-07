@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ppjournal/data/local/database.dart';
 import 'package:ppjournal/data/models/journal_model.dart';
-import 'package:ppjournal/presentation/colors/colors.dart';
 import 'package:ppjournal/providers/journal_provider.dart';
 
 class JournalPage extends ConsumerStatefulWidget {
@@ -72,133 +70,182 @@ class _JournalPageState extends ConsumerState<JournalPage> {
   @override
   Widget build(BuildContext context) {
     final journalAsyncValue = ref.watch(journalListProvider);
-    print("journalAsyncValue: $journalAsyncValue");
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            Text(
-              'Filter',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            IconButton(
-              icon: Icon(Icons.filter_list),
-              onPressed: () {
-                // Add filter logic
-              },
-            ),
-          ],
-        ),
-        Expanded(
-          child: journalAsyncValue.when(
-            data: (journalList) {
-              if (journalList.isEmpty) {
-                return Center(child: Text("No journal entries found."));
-              }
-              return ListView.builder(
-                padding: EdgeInsets.all(5.0),
-                itemCount: journalList.length,
-                itemBuilder: (context, index) {
-                  final entry = journalList[index];
-                  return _buildJournalCard(entry); // <== move card to a method
-                },
-              );
+
+    return Scaffold(
+      body: journalAsyncValue.when(
+        data: (journalList) {
+          if (journalList.isEmpty) {
+            return Center(child: Text("No journal entries found."));
+          }
+          return ListView.builder(
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+            itemCount: journalList.length,
+            itemBuilder: (context, index) {
+              final entry = journalList[index];
+              return _buildJournalCard(context, entry);
             },
-            loading: () => Center(child: CircularProgressIndicator()),
-            error: (err, stack) => Center(child: Text('Error: $err')),
+          );
+        },
+        loading: () => Center(child: CircularProgressIndicator()),
+        error: (err, stack) => Center(child: Text('Error: $err')),
+      ),
+    );
+  }
+
+  Widget _buildJournalCard(BuildContext context, JournalFull entry) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final journal = entry.journal;
+    final formattedDate =
+        journal.date != null
+            ? "${journal.date!.year.toString().padLeft(4, '0')}-${journal.date!.month.toString().padLeft(2, '0')}-${journal.date!.day.toString().padLeft(2, '0')}"
+            : "-";
+
+    final content = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text("📅 Date: $formattedDate", style: _style(theme)),
+        Text("📊 Pair: ${entry.pair?.name ?? '-'}", style: _style(theme)),
+        Text("🧪 Setup: ${entry.setup?.name ?? '-'}", style: _style(theme)),
+        Text("🎯 POI: ${entry.poi?.name ?? '-'}", style: _style(theme)),
+        Text(
+          "💰 Profit: ${journal.profit ?? '-'} | Fee: ${journal.fee ?? '-'}",
+          style: _style(theme),
+        ),
+        Text(
+          "📉 RR: ${journal.riskRewardRatio ?? '-'} | Win/Loss: ${journal.winLose ?? '-'}",
+          style: _style(theme),
+        ),
+        Text(
+          "⏱️ TF: ${journal.timeFrame ?? '-'} | Position: ${journal.position ?? '-'}",
+          style: _style(theme),
+        ),
+      ],
+    );
+
+    return Stack(
+      children: [
+        Card(
+          color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.7),
+          margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(
+              color: Theme.of(context).dividerColor.withValues(alpha: 0.2),
+              width: 1,
+            ),
+          ),
+          elevation: 4,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                content,
+                const SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    IconButton(
+                      icon: Icon(
+                        Icons.note,
+                        color:colorScheme.primary,
+                      ),
+                      onPressed: () {
+                        ref.invalidate(journalNoteProvider);
+                        ref
+                            .read(journalNoteProvider.notifier)
+                            .updateId(journal.id);
+                        Navigator.pushNamed(context, '/view-note-journal-page');
+                      },
+                    ),
+                    IconButton(
+                      icon: Icon(
+                        Icons.edit,
+                        color: colorScheme.secondary,
+                      ),
+                      onPressed: () {
+                        ref.invalidate(journalNoteProvider);
+                        ref
+                            .read(journalNoteProvider.notifier)
+                            .updateId(journal.id);
+                        Navigator.pushNamed(context, '/add-journal-page');
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        /// 🔥 ปุ่ม Delete มุมขวาบน
+        Positioned(
+          top: 0,
+          right: 0,
+          child: IconButton(
+            icon: Icon(Icons.delete, color: Colors.redAccent, size: 22),
+            onPressed: () async {
+              final confirmed = await showDialog<bool>(
+                context: context,
+                builder:
+                    (ctx) => AlertDialog(
+                      title: Text('Confirm Delete'),
+                      content: Text(
+                        'Do you really want to delete this journal?',
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx, false),
+                          child: Text('Cancel'),
+                        ),
+                        ElevatedButton(
+                          onPressed: () => Navigator.pop(ctx, true),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                          ),
+                          child: Text('Delete'),
+                        ),
+                      ],
+                    ),
+              );
+
+              if (confirmed == true) {
+                // ลบจริง
+                ref.read(journalServiceProvider)
+                    .deleteJournal(journal.id)
+                    .then((result) {
+                  if (result > 0) {
+                    // ลบสำเร็จ
+                    ref.invalidate(journalListProvider);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Journal deleted successfully.'),
+                      ),
+                    );
+                  } else {
+                    // ลบไม่สำเร็จ
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Failed to delete journal.'),
+                      ),
+                    );
+                  }
+                });
+                print('Confirmed delete: ${journal.id}');
+              }
+            },
+            tooltip: 'Delete',
           ),
         ),
       ],
     );
   }
 
-  Widget _buildJournalCard(JournalFull entry) {
-    print("journal entry: ${entry.journal.id}");
-    final date = entry.journal.date;
-    String formattedDate = "-";
-    if (date != null) {
-       formattedDate = "${date.year.toString().padLeft(4, '0')}-"
-                     "${date.month.toString().padLeft(2, '0')}-"
-                     "${date.day.toString().padLeft(2, '0')}";
-    }
-    
-    return Card(
-      color: AppColors.primary,
-      margin: EdgeInsets.all(8.0),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
-      elevation: 4.0,
-      child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text("Date : ${formattedDate ?? "-"}", style: _style()),
-                Text("${entry.journal.session ?? "-"}", style: _style()),
-                Text("Pair : ${entry.pair?.name ?? "-"}", style: _style()),
-              ],
-            ),
-            SizedBox(height: 10),
-            Divider(color: Colors.grey, height: 1),
-            SizedBox(height: 10),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text("Setup : ${entry.setup?.name ?? "-"}", style: _style()),
-                Text("POI : ${entry.poi?.name ?? "-"}", style: _style()),
-                Text("Price Pattern : ${entry.pricePattern?.name ?? "-"}", style: _style()),
-                Text("Win Loss : ${entry.journal.winLose ?? "-"}", style: _style()),
-                Text("RR : ${entry.journal.riskRewardRatio ?? "-"}", style: _style()),
-                Text("Profit : ${entry.journal.profit ?? "-"}", style: _style()),
-                Text("Fee : ${entry.journal.fee}", style: _style()),
-              ],
-            ),
-            SizedBox(height: 10),
-            Divider(color: Colors.grey, height: 1),
-            SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                IconButton(
-                  onPressed: () => {
-                    ref.invalidate(journalNoteProvider), // Reset state when view a journal
-                    ref.read(journalNoteProvider.notifier).updateId(entry.journal.id),
-                    Navigator.pushNamed(
-                      context,
-                      '/note-journal-page'
-                    )
-                  },
-                  icon: Icon(Icons.note),
-                  color: AppColors.onPrimary,
-                ),
-                IconButton(
-                  onPressed: () => {
-                    ref.invalidate(journalNoteProvider), // Reset state when adding a new journal
-                    ref.read(journalNoteProvider.notifier).updateId(entry.journal.id),
-                    Navigator.pushNamed(
-                      context,
-                      '/add-journal-page'
-                    )
-                  },
-                  icon: Icon(Icons.edit),
-                  color: AppColors.onPrimary,
-                ),
-                Text("TF : ${entry.journal.timeFrame ?? "-"} ", style: _style()),
-                Text("Position : ${entry.journal.position ?? "-"}", style: _style()),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  TextStyle _style() => TextStyle(
-    fontSize: 16,
-    fontWeight: FontWeight.bold,
-    color: AppColors.onPrimary,
+  TextStyle _style(ThemeData theme) => TextStyle(
+    fontSize: 15,
+    fontWeight: FontWeight.w500,
+    color: theme.colorScheme.onSurface,
   );
 }

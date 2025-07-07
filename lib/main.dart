@@ -8,10 +8,8 @@ import '../../presentation/pages/home/create_port_page.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 void main() {
-  runApp(
-    const ProviderScope(child: MyApp()),
-  );
-  }
+  runApp(const ProviderScope(child: MyApp()));
+}
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -20,8 +18,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
-      theme: ThemeData(
-      ),
+      theme: ThemeData.light(),
+      darkTheme: ThemeData.dark(),
+      themeMode: ThemeMode.dark, // หรือ ThemeMode.dark เพื่อเปิดถาวร;
       onGenerateRoute: (settings) {
         switch (settings.name) {
           case '/':
@@ -32,20 +31,34 @@ class MyApp extends StatelessWidget {
           case '/create-port-page':
             return MaterialPageRoute(builder: (context) => CreatePortPage());
           case '/add-journal-page':
-            return MaterialPageRoute(builder: (context) => AddJournalPage(), settings: settings);
+            return MaterialPageRoute(
+              builder: (context) => AddJournalPage(),
+              settings: settings,
+            );
           case '/note-journal-page':
-          return  MaterialPageRoute(builder: (context) => NoteJournalPage(), settings: settings);
+            return MaterialPageRoute(
+              builder: (context) => NoteJournalPage(),
+              settings: settings,
+            );
+          case '/view-note-journal-page':
+            return MaterialPageRoute(
+              builder: (context) => NoteJournalPage(),
+              settings: settings,
+            );
           case '/management-page':
-            return MaterialPageRoute(builder: (context) => ManagementPage(), settings: settings);
+            return MaterialPageRoute(
+              builder: (context) => ManagementPage(),
+              settings: settings,
+            );
           default:
             return MaterialPageRoute(
-              builder: (context) => const Scaffold(
-                body: Center(child: Text('Page not found')),
-              ),
+              builder:
+                  (context) => const Scaffold(
+                    body: Center(child: Text('Page not found')),
+                  ),
             );
         }
       },
     );
   }
 }
-

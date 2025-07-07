@@ -63,17 +63,6 @@ class $PortTable extends Port with TableInfo<$PortTable, PortData> {
     type: DriftSqlType.double,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _journalIdMeta = const VerificationMeta(
-    'journalId',
-  );
-  @override
-  late final GeneratedColumn<int> journalId = GeneratedColumn<int>(
-    'journal_id',
-    aliasedName,
-    true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -103,7 +92,6 @@ class $PortTable extends Port with TableInfo<$PortTable, PortData> {
     portSize,
     riskPerTrade,
     costPerTrade,
-    journalId,
     createdAt,
     updatedAt,
   ];
@@ -160,12 +148,6 @@ class $PortTable extends Port with TableInfo<$PortTable, PortData> {
     } else if (isInserting) {
       context.missing(_costPerTradeMeta);
     }
-    if (data.containsKey('journal_id')) {
-      context.handle(
-        _journalIdMeta,
-        journalId.isAcceptableOrUnknown(data['journal_id']!, _journalIdMeta),
-      );
-    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -216,10 +198,6 @@ class $PortTable extends Port with TableInfo<$PortTable, PortData> {
             DriftSqlType.double,
             data['${effectivePrefix}cost_per_trade'],
           )!,
-      journalId: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}journal_id'],
-      ),
       createdAt:
           attachedDatabase.typeMapping.read(
             DriftSqlType.dateTime,
@@ -245,7 +223,6 @@ class PortData extends DataClass implements Insertable<PortData> {
   final double portSize;
   final double riskPerTrade;
   final double costPerTrade;
-  final int? journalId;
   final DateTime createdAt;
   final DateTime updatedAt;
   const PortData({
@@ -254,7 +231,6 @@ class PortData extends DataClass implements Insertable<PortData> {
     required this.portSize,
     required this.riskPerTrade,
     required this.costPerTrade,
-    this.journalId,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -266,9 +242,6 @@ class PortData extends DataClass implements Insertable<PortData> {
     map['port_size'] = Variable<double>(portSize);
     map['risk_per_trade'] = Variable<double>(riskPerTrade);
     map['cost_per_trade'] = Variable<double>(costPerTrade);
-    if (!nullToAbsent || journalId != null) {
-      map['journal_id'] = Variable<int>(journalId);
-    }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     return map;
@@ -281,10 +254,6 @@ class PortData extends DataClass implements Insertable<PortData> {
       portSize: Value(portSize),
       riskPerTrade: Value(riskPerTrade),
       costPerTrade: Value(costPerTrade),
-      journalId:
-          journalId == null && nullToAbsent
-              ? const Value.absent()
-              : Value(journalId),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
     );
@@ -301,7 +270,6 @@ class PortData extends DataClass implements Insertable<PortData> {
       portSize: serializer.fromJson<double>(json['portSize']),
       riskPerTrade: serializer.fromJson<double>(json['riskPerTrade']),
       costPerTrade: serializer.fromJson<double>(json['costPerTrade']),
-      journalId: serializer.fromJson<int?>(json['journalId']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
@@ -315,7 +283,6 @@ class PortData extends DataClass implements Insertable<PortData> {
       'portSize': serializer.toJson<double>(portSize),
       'riskPerTrade': serializer.toJson<double>(riskPerTrade),
       'costPerTrade': serializer.toJson<double>(costPerTrade),
-      'journalId': serializer.toJson<int?>(journalId),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
@@ -327,7 +294,6 @@ class PortData extends DataClass implements Insertable<PortData> {
     double? portSize,
     double? riskPerTrade,
     double? costPerTrade,
-    Value<int?> journalId = const Value.absent(),
     DateTime? createdAt,
     DateTime? updatedAt,
   }) => PortData(
@@ -336,7 +302,6 @@ class PortData extends DataClass implements Insertable<PortData> {
     portSize: portSize ?? this.portSize,
     riskPerTrade: riskPerTrade ?? this.riskPerTrade,
     costPerTrade: costPerTrade ?? this.costPerTrade,
-    journalId: journalId.present ? journalId.value : this.journalId,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
   );
@@ -353,7 +318,6 @@ class PortData extends DataClass implements Insertable<PortData> {
           data.costPerTrade.present
               ? data.costPerTrade.value
               : this.costPerTrade,
-      journalId: data.journalId.present ? data.journalId.value : this.journalId,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -367,7 +331,6 @@ class PortData extends DataClass implements Insertable<PortData> {
           ..write('portSize: $portSize, ')
           ..write('riskPerTrade: $riskPerTrade, ')
           ..write('costPerTrade: $costPerTrade, ')
-          ..write('journalId: $journalId, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -381,7 +344,6 @@ class PortData extends DataClass implements Insertable<PortData> {
     portSize,
     riskPerTrade,
     costPerTrade,
-    journalId,
     createdAt,
     updatedAt,
   );
@@ -394,7 +356,6 @@ class PortData extends DataClass implements Insertable<PortData> {
           other.portSize == this.portSize &&
           other.riskPerTrade == this.riskPerTrade &&
           other.costPerTrade == this.costPerTrade &&
-          other.journalId == this.journalId &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
@@ -405,7 +366,6 @@ class PortCompanion extends UpdateCompanion<PortData> {
   final Value<double> portSize;
   final Value<double> riskPerTrade;
   final Value<double> costPerTrade;
-  final Value<int?> journalId;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   const PortCompanion({
@@ -414,7 +374,6 @@ class PortCompanion extends UpdateCompanion<PortData> {
     this.portSize = const Value.absent(),
     this.riskPerTrade = const Value.absent(),
     this.costPerTrade = const Value.absent(),
-    this.journalId = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
   });
@@ -424,7 +383,6 @@ class PortCompanion extends UpdateCompanion<PortData> {
     required double portSize,
     required double riskPerTrade,
     required double costPerTrade,
-    this.journalId = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
   }) : name = Value(name),
@@ -439,7 +397,6 @@ class PortCompanion extends UpdateCompanion<PortData> {
     Expression<double>? portSize,
     Expression<double>? riskPerTrade,
     Expression<double>? costPerTrade,
-    Expression<int>? journalId,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
   }) {
@@ -449,7 +406,6 @@ class PortCompanion extends UpdateCompanion<PortData> {
       if (portSize != null) 'port_size': portSize,
       if (riskPerTrade != null) 'risk_per_trade': riskPerTrade,
       if (costPerTrade != null) 'cost_per_trade': costPerTrade,
-      if (journalId != null) 'journal_id': journalId,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
     });
@@ -461,7 +417,6 @@ class PortCompanion extends UpdateCompanion<PortData> {
     Value<double>? portSize,
     Value<double>? riskPerTrade,
     Value<double>? costPerTrade,
-    Value<int?>? journalId,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
   }) {
@@ -471,7 +426,6 @@ class PortCompanion extends UpdateCompanion<PortData> {
       portSize: portSize ?? this.portSize,
       riskPerTrade: riskPerTrade ?? this.riskPerTrade,
       costPerTrade: costPerTrade ?? this.costPerTrade,
-      journalId: journalId ?? this.journalId,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -495,9 +449,6 @@ class PortCompanion extends UpdateCompanion<PortData> {
     if (costPerTrade.present) {
       map['cost_per_trade'] = Variable<double>(costPerTrade.value);
     }
-    if (journalId.present) {
-      map['journal_id'] = Variable<int>(journalId.value);
-    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -515,7 +466,6 @@ class PortCompanion extends UpdateCompanion<PortData> {
           ..write('portSize: $portSize, ')
           ..write('riskPerTrade: $riskPerTrade, ')
           ..write('costPerTrade: $costPerTrade, ')
-          ..write('journalId: $journalId, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -894,6 +844,16 @@ class $JournalTable extends Journal with TableInfo<$JournalTable, JournalData> {
       'PRIMARY KEY AUTOINCREMENT',
     ),
   );
+  static const VerificationMeta _portIdMeta = const VerificationMeta('portId');
+  @override
+  late final GeneratedColumn<int> portId = GeneratedColumn<int>(
+    'port_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    $customConstraints: 'REFERENCES port(id)',
+  );
   static const VerificationMeta _dateMeta = const VerificationMeta('date');
   @override
   late final GeneratedColumn<DateTime> date = GeneratedColumn<DateTime>(
@@ -1087,6 +1047,7 @@ class $JournalTable extends Journal with TableInfo<$JournalTable, JournalData> {
   @override
   List<GeneratedColumn> get $columns => [
     id,
+    portId,
     date,
     session,
     pairId,
@@ -1120,6 +1081,14 @@ class $JournalTable extends Journal with TableInfo<$JournalTable, JournalData> {
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('port_id')) {
+      context.handle(
+        _portIdMeta,
+        portId.isAcceptableOrUnknown(data['port_id']!, _portIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_portIdMeta);
     }
     if (data.containsKey('date')) {
       context.handle(
@@ -1262,6 +1231,11 @@ class $JournalTable extends Journal with TableInfo<$JournalTable, JournalData> {
             DriftSqlType.int,
             data['${effectivePrefix}id'],
           )!,
+      portId:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}port_id'],
+          )!,
       date: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}date'],
@@ -1347,6 +1321,7 @@ class $JournalTable extends Journal with TableInfo<$JournalTable, JournalData> {
 
 class JournalData extends DataClass implements Insertable<JournalData> {
   final int id;
+  final int portId;
   final DateTime? date;
   final String? session;
   final int? pairId;
@@ -1367,6 +1342,7 @@ class JournalData extends DataClass implements Insertable<JournalData> {
   final DateTime updatedAt;
   const JournalData({
     required this.id,
+    required this.portId,
     this.date,
     this.session,
     this.pairId,
@@ -1390,6 +1366,7 @@ class JournalData extends DataClass implements Insertable<JournalData> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
+    map['port_id'] = Variable<int>(portId);
     if (!nullToAbsent || date != null) {
       map['date'] = Variable<DateTime>(date);
     }
@@ -1446,6 +1423,7 @@ class JournalData extends DataClass implements Insertable<JournalData> {
   JournalCompanion toCompanion(bool nullToAbsent) {
     return JournalCompanion(
       id: Value(id),
+      portId: Value(portId),
       date: date == null && nullToAbsent ? const Value.absent() : Value(date),
       session:
           session == null && nullToAbsent
@@ -1510,6 +1488,7 @@ class JournalData extends DataClass implements Insertable<JournalData> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return JournalData(
       id: serializer.fromJson<int>(json['id']),
+      portId: serializer.fromJson<int>(json['portId']),
       date: serializer.fromJson<DateTime?>(json['date']),
       session: serializer.fromJson<String?>(json['session']),
       pairId: serializer.fromJson<int?>(json['pairId']),
@@ -1535,6 +1514,7 @@ class JournalData extends DataClass implements Insertable<JournalData> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
+      'portId': serializer.toJson<int>(portId),
       'date': serializer.toJson<DateTime?>(date),
       'session': serializer.toJson<String?>(session),
       'pairId': serializer.toJson<int?>(pairId),
@@ -1558,6 +1538,7 @@ class JournalData extends DataClass implements Insertable<JournalData> {
 
   JournalData copyWith({
     int? id,
+    int? portId,
     Value<DateTime?> date = const Value.absent(),
     Value<String?> session = const Value.absent(),
     Value<int?> pairId = const Value.absent(),
@@ -1578,6 +1559,7 @@ class JournalData extends DataClass implements Insertable<JournalData> {
     DateTime? updatedAt,
   }) => JournalData(
     id: id ?? this.id,
+    portId: portId ?? this.portId,
     date: date.present ? date.value : this.date,
     session: session.present ? session.value : this.session,
     pairId: pairId.present ? pairId.value : this.pairId,
@@ -1603,6 +1585,7 @@ class JournalData extends DataClass implements Insertable<JournalData> {
   JournalData copyWithCompanion(JournalCompanion data) {
     return JournalData(
       id: data.id.present ? data.id.value : this.id,
+      portId: data.portId.present ? data.portId.value : this.portId,
       date: data.date.present ? data.date.value : this.date,
       session: data.session.present ? data.session.value : this.session,
       pairId: data.pairId.present ? data.pairId.value : this.pairId,
@@ -1644,6 +1627,7 @@ class JournalData extends DataClass implements Insertable<JournalData> {
   String toString() {
     return (StringBuffer('JournalData(')
           ..write('id: $id, ')
+          ..write('portId: $portId, ')
           ..write('date: $date, ')
           ..write('session: $session, ')
           ..write('pairId: $pairId, ')
@@ -1669,6 +1653,7 @@ class JournalData extends DataClass implements Insertable<JournalData> {
   @override
   int get hashCode => Object.hash(
     id,
+    portId,
     date,
     session,
     pairId,
@@ -1693,6 +1678,7 @@ class JournalData extends DataClass implements Insertable<JournalData> {
       identical(this, other) ||
       (other is JournalData &&
           other.id == this.id &&
+          other.portId == this.portId &&
           other.date == this.date &&
           other.session == this.session &&
           other.pairId == this.pairId &&
@@ -1715,6 +1701,7 @@ class JournalData extends DataClass implements Insertable<JournalData> {
 
 class JournalCompanion extends UpdateCompanion<JournalData> {
   final Value<int> id;
+  final Value<int> portId;
   final Value<DateTime?> date;
   final Value<String?> session;
   final Value<int?> pairId;
@@ -1735,6 +1722,7 @@ class JournalCompanion extends UpdateCompanion<JournalData> {
   final Value<DateTime> updatedAt;
   const JournalCompanion({
     this.id = const Value.absent(),
+    this.portId = const Value.absent(),
     this.date = const Value.absent(),
     this.session = const Value.absent(),
     this.pairId = const Value.absent(),
@@ -1756,6 +1744,7 @@ class JournalCompanion extends UpdateCompanion<JournalData> {
   });
   JournalCompanion.insert({
     this.id = const Value.absent(),
+    required int portId,
     this.date = const Value.absent(),
     this.session = const Value.absent(),
     this.pairId = const Value.absent(),
@@ -1774,10 +1763,12 @@ class JournalCompanion extends UpdateCompanion<JournalData> {
     this.afterPicture = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
-  }) : createdAt = Value(createdAt),
+  }) : portId = Value(portId),
+       createdAt = Value(createdAt),
        updatedAt = Value(updatedAt);
   static Insertable<JournalData> custom({
     Expression<int>? id,
+    Expression<int>? portId,
     Expression<DateTime>? date,
     Expression<String>? session,
     Expression<int>? pairId,
@@ -1799,6 +1790,7 @@ class JournalCompanion extends UpdateCompanion<JournalData> {
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (portId != null) 'port_id': portId,
       if (date != null) 'date': date,
       if (session != null) 'session': session,
       if (pairId != null) 'pair_id': pairId,
@@ -1822,6 +1814,7 @@ class JournalCompanion extends UpdateCompanion<JournalData> {
 
   JournalCompanion copyWith({
     Value<int>? id,
+    Value<int>? portId,
     Value<DateTime?>? date,
     Value<String?>? session,
     Value<int?>? pairId,
@@ -1843,6 +1836,7 @@ class JournalCompanion extends UpdateCompanion<JournalData> {
   }) {
     return JournalCompanion(
       id: id ?? this.id,
+      portId: portId ?? this.portId,
       date: date ?? this.date,
       session: session ?? this.session,
       pairId: pairId ?? this.pairId,
@@ -1869,6 +1863,9 @@ class JournalCompanion extends UpdateCompanion<JournalData> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<int>(id.value);
+    }
+    if (portId.present) {
+      map['port_id'] = Variable<int>(portId.value);
     }
     if (date.present) {
       map['date'] = Variable<DateTime>(date.value);
@@ -1931,6 +1928,7 @@ class JournalCompanion extends UpdateCompanion<JournalData> {
   String toString() {
     return (StringBuffer('JournalCompanion(')
           ..write('id: $id, ')
+          ..write('portId: $portId, ')
           ..write('date: $date, ')
           ..write('session: $session, ')
           ..write('pairId: $pairId, ')
@@ -3825,7 +3823,6 @@ typedef $$PortTableCreateCompanionBuilder =
       required double portSize,
       required double riskPerTrade,
       required double costPerTrade,
-      Value<int?> journalId,
       required DateTime createdAt,
       required DateTime updatedAt,
     });
@@ -3836,7 +3833,6 @@ typedef $$PortTableUpdateCompanionBuilder =
       Value<double> portSize,
       Value<double> riskPerTrade,
       Value<double> costPerTrade,
-      Value<int?> journalId,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
     });
@@ -3871,11 +3867,6 @@ class $$PortTableFilterComposer extends Composer<_$AppDatabase, $PortTable> {
 
   ColumnFilters<double> get costPerTrade => $composableBuilder(
     column: $table.costPerTrade,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get journalId => $composableBuilder(
-    column: $table.journalId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3923,11 +3914,6 @@ class $$PortTableOrderingComposer extends Composer<_$AppDatabase, $PortTable> {
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<int> get journalId => $composableBuilder(
-    column: $table.journalId,
-    builder: (column) => ColumnOrderings(column),
-  );
-
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -3966,9 +3952,6 @@ class $$PortTableAnnotationComposer
     column: $table.costPerTrade,
     builder: (column) => column,
   );
-
-  GeneratedColumn<int> get journalId =>
-      $composableBuilder(column: $table.journalId, builder: (column) => column);
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -4010,7 +3993,6 @@ class $$PortTableTableManager
                 Value<double> portSize = const Value.absent(),
                 Value<double> riskPerTrade = const Value.absent(),
                 Value<double> costPerTrade = const Value.absent(),
-                Value<int?> journalId = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
               }) => PortCompanion(
@@ -4019,7 +4001,6 @@ class $$PortTableTableManager
                 portSize: portSize,
                 riskPerTrade: riskPerTrade,
                 costPerTrade: costPerTrade,
-                journalId: journalId,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
               ),
@@ -4030,7 +4011,6 @@ class $$PortTableTableManager
                 required double portSize,
                 required double riskPerTrade,
                 required double costPerTrade,
-                Value<int?> journalId = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
               }) => PortCompanion.insert(
@@ -4039,7 +4019,6 @@ class $$PortTableTableManager
                 portSize: portSize,
                 riskPerTrade: riskPerTrade,
                 costPerTrade: costPerTrade,
-                journalId: journalId,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
               ),
@@ -4276,6 +4255,7 @@ typedef $$TradeSetupTableProcessedTableManager =
 typedef $$JournalTableCreateCompanionBuilder =
     JournalCompanion Function({
       Value<int> id,
+      required int portId,
       Value<DateTime?> date,
       Value<String?> session,
       Value<int?> pairId,
@@ -4298,6 +4278,7 @@ typedef $$JournalTableCreateCompanionBuilder =
 typedef $$JournalTableUpdateCompanionBuilder =
     JournalCompanion Function({
       Value<int> id,
+      Value<int> portId,
       Value<DateTime?> date,
       Value<String?> session,
       Value<int?> pairId,
@@ -4329,6 +4310,11 @@ class $$JournalTableFilterComposer
   });
   ColumnFilters<int> get id => $composableBuilder(
     column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get portId => $composableBuilder(
+    column: $table.portId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -4437,6 +4423,11 @@ class $$JournalTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get portId => $composableBuilder(
+    column: $table.portId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get date => $composableBuilder(
     column: $table.date,
     builder: (column) => ColumnOrderings(column),
@@ -4540,6 +4531,9 @@ class $$JournalTableAnnotationComposer
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
+  GeneratedColumn<int> get portId =>
+      $composableBuilder(column: $table.portId, builder: (column) => column);
+
   GeneratedColumn<DateTime> get date =>
       $composableBuilder(column: $table.date, builder: (column) => column);
 
@@ -4639,6 +4633,7 @@ class $$JournalTableTableManager
           updateCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
+                Value<int> portId = const Value.absent(),
                 Value<DateTime?> date = const Value.absent(),
                 Value<String?> session = const Value.absent(),
                 Value<int?> pairId = const Value.absent(),
@@ -4659,6 +4654,7 @@ class $$JournalTableTableManager
                 Value<DateTime> updatedAt = const Value.absent(),
               }) => JournalCompanion(
                 id: id,
+                portId: portId,
                 date: date,
                 session: session,
                 pairId: pairId,
@@ -4681,6 +4677,7 @@ class $$JournalTableTableManager
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
+                required int portId,
                 Value<DateTime?> date = const Value.absent(),
                 Value<String?> session = const Value.absent(),
                 Value<int?> pairId = const Value.absent(),
@@ -4701,6 +4698,7 @@ class $$JournalTableTableManager
                 required DateTime updatedAt,
               }) => JournalCompanion.insert(
                 id: id,
+                portId: portId,
                 date: date,
                 session: session,
                 pairId: pairId,

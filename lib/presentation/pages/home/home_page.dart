@@ -13,49 +13,51 @@ class HomePage extends ConsumerStatefulWidget {
 class _HomePageState extends ConsumerState<HomePage> {
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final portList = ref.watch(portListProvider);
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: colorScheme.surface,
       appBar: CustomAppBar(
         title: "Home",
         actions: [
           PopupMenuButton(
-            iconColor: AppColors.onPrimary,
+            iconColor: colorScheme.primary,
             itemBuilder:
                 (context) => [
                   PopupMenuItem(
                     value: 'pair',
                     child: Text(
                       'Pair',
-                      style: TextStyle(color: AppColors.primary),
+                      style: TextStyle(color: colorScheme.primary),
                     ),
                   ),
                   PopupMenuItem(
                     value: 'setup',
                     child: Text(
                       'Setups',
-                      style: TextStyle(color: AppColors.primary),
+                      style: TextStyle(color: colorScheme.primary),
                     ),
                   ),
                   PopupMenuItem(
                     value: 'poi',
                     child: Text(
                       "POI",
-                      style: TextStyle(color: AppColors.primary),
+                      style: TextStyle(color: colorScheme.primary),
                     ),
                   ),
                   PopupMenuItem(
                     value: 'signal',
                     child: Text(
                       "Signals",
-                      style: TextStyle(color: AppColors.primary),
+                      style: TextStyle(color: colorScheme.primary),
                     ),
                   ),
                   PopupMenuItem(
                     value: 'price-pattern',
                     child: Text(
                       "Price Patterns",
-                      style: TextStyle(color: AppColors.primary),
+                      style: TextStyle(color: colorScheme.primary),
                     ),
                   ),
                 ],
@@ -98,7 +100,7 @@ class _HomePageState extends ConsumerState<HomePage> {
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: AppColors.onBackground,
+                color: colorScheme.primary,
               ),
             ),
             SizedBox(height: 20),
@@ -123,8 +125,10 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   Widget buildRankingCard(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Card(
-      color: AppColors.primaryVariant,
+      color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.7),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       elevation: 4,
       child: Padding(
@@ -137,7 +141,7 @@ class _HomePageState extends ConsumerState<HomePage> {
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: AppColors.onPrimary,
+                color: colorScheme.primary,
               ),
             ),
             SizedBox(height: 16),
@@ -196,11 +200,13 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   Widget buildPortCardList(BuildContext context, List<PortData> portList) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     if (portList.isEmpty) {
       return Center(
         child: Text(
           'No ports available',
-          style: TextStyle(fontSize: 16, color: AppColors.onBackground),
+          style: TextStyle(fontSize: 16, color: colorScheme.onSurface),
         ),
       );
     }
@@ -223,11 +229,13 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   Widget buildPortCard(BuildContext context, PortData port) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return GestureDetector(
       onTap: () => Navigator.pushNamed(context, '/port-inside-page'),
       child: Card(
         elevation: 4,
-        color: AppColors.secondaryVariant,
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.7),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: Container(
           width: 160,

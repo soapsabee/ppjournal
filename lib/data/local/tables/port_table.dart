@@ -6,7 +6,10 @@ class Port extends Table {
   RealColumn get portSize => real()();
   RealColumn get riskPerTrade => real()();
   RealColumn get costPerTrade => real()();
-  IntColumn get journalId => integer().nullable()(); // foreign key
+  // IntColumn get journalId => integer().nullable()(); // foreign key
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  String get tableName => 'port';
 }
