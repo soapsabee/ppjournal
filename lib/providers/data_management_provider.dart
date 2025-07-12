@@ -6,12 +6,8 @@ import 'package:ppjournal/data/repositories/price_pattern_repository.dart';
 import 'package:ppjournal/data/repositories/signal_repository.dart';
 import 'package:ppjournal/data/repositories/trade_setup_repository.dart';
 import 'package:ppjournal/services/data_management_service.dart';
+import 'package:ppjournal/providers/open_database.dart';
 
-final dbProvider = Provider<AppDatabase>((ref) {
-  final db = AppDatabase();
-  db.insertDataPrepared();
-  return db;
-});
 
 final dataManagementServiceProvider = Provider<DataManagementService>((ref) {
   final db = ref.watch(dbProvider);

@@ -1,18 +1,20 @@
 
 class DashboardModel {
   final double portSize;
+  final double remainingBalance;
   final double totalProfit;
   final double riskRewardRatio;
   final double totalFee;
   final int totalLoss;
   final int totalWin;
   final double winRate;
-  final double totalTrades;
-  final int maxDrawdown;
+  final int totalTrades;
+  final double maxDrawdown;
   final int winStreak;
   final int lossStreak;
 
   DashboardModel({
+    required this.remainingBalance,
     required this.totalProfit,
     required this.totalLoss,
     required this.winRate,

@@ -30,6 +30,11 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
             ),
             _buildDashboardCard(
               context,
+              'Balance',
+              '\$${data.remainingBalance.toStringAsFixed(2)}',
+            ),
+            _buildDashboardCard(
+              context,
               'Risk / Trade',
               '${data.riskRewardRatio.toStringAsFixed(2)}%',
             ),
@@ -96,7 +101,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                   shrinkWrap: true,
                   physics: NeverScrollableScrollPhysics(),
                   childAspectRatio: 1.4,
-                  children: dashboardWidgets
+                  children: dashboardWidgets,
                 ),
 
                 const SizedBox(height: 24),
@@ -109,15 +114,34 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                     color: colorScheme.primary,
                   ),
                 ),
-
                 const SizedBox(height: 16),
-
                 _buildBarChart(context),
+                Row(
+                  children: [
+                    _buildLegendItem(color: colorScheme.primary, label: 'Win'),
+                    const SizedBox(width: 16),
+                    _buildLegendItem(color: Colors.redAccent, label: 'Loss'),
+                  ],
+                ),
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildLegendItem({required Color color, required String label}) {
+    return Row(
+      children: [
+        Container(
+          width: 12,
+          height: 12,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
+        const SizedBox(width: 6),
+        Text(label, style: const TextStyle(fontSize: 14)),
+      ],
     );
   }
 
@@ -160,6 +184,14 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
 
   Widget _buildBarChart(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final topThreeWins = ref.watch(topThreeWinsProvider);
+    print(
+      topThreeWins.when(
+        data: (data) => 'Top Three Wins: ${data.length}',
+        loading: () => 'Loading Top Three Wins...',
+        error: (error, stack) => 'Error fetching top three wins: $error',
+      ),
+    );
 
     return Container(
       height: 220,
@@ -180,32 +212,48 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
       ),
       child: BarChart(
         BarChartData(
-          barGroups: [
-            BarChartGroupData(
-              x: 0,
-              barRods: [
-                BarChartRodData(toY: 10, color: colorScheme.primary, width: 16),
-                BarChartRodData(toY: 5, color: Colors.redAccent, width: 16),
-              ],
-            ),
-            BarChartGroupData(
-              x: 1,
-              barRods: [
-                BarChartRodData(toY: 20, color: colorScheme.primary, width: 16),
-                BarChartRodData(toY: 5, color: Colors.redAccent, width: 16),
-              ],
-            ),
-            BarChartGroupData(
-              x: 2,
-              barRods: [
-                BarChartRodData(toY: 30, color: colorScheme.primary, width: 16),
-                BarChartRodData(toY: 5, color: Colors.redAccent, width: 16),
-              ],
-            ),
-          ],
+          barGroups: topThreeWins.when(
+            data:
+                (data) =>
+                    data.map((e) {
+                      print(
+                        'Top Three Win: ${e.name}, Win: ${e.win}, Loss: ${e.loss}, WinRate: ${e.winRate}',
+                      );
+                      return BarChartGroupData(
+                        x: data.indexOf(e),
+                        barRods: [
+                          BarChartRodData(
+                            toY: e.win.toDouble(),
+                            color: colorScheme.primary,
+                            width: 16,
+                          ),
+                          BarChartRodData(
+                            toY: e.loss.toDouble(),
+                            color: Colors.redAccent,
+                            width: 16,
+                          ),
+                        ],
+                      );
+                    }).toList(),
+            loading: () => [],
+            error: (error, stack) => [],
+          ),
           titlesData: FlTitlesData(
             bottomTitles: AxisTitles(sideTitles: _bottomTitles),
-            leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true)),
+            leftTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 40, // เผื่อพื้นที่ตัวเลขมากขึ้น
+                interval: 10, // ปรับช่วงตัวเลขให้พอดี เช่น ทุก 10 หน่วย
+                getTitlesWidget: (value, meta) {
+                  return Text(
+                    value.toInt().toString(),
+                    style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                    textAlign: TextAlign.left,
+                  );
+                },
+              ),
+            ),
             rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
             topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
           ),

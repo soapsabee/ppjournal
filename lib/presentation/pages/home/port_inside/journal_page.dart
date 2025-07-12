@@ -95,6 +95,7 @@ class _JournalPageState extends ConsumerState<JournalPage> {
   Widget _buildJournalCard(BuildContext context, JournalFull entry) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final notifer = ref.read(journalNoteProvider.notifier);
 
     final journal = entry.journal;
     final formattedDate =
@@ -127,7 +128,9 @@ class _JournalPageState extends ConsumerState<JournalPage> {
     return Stack(
       children: [
         Card(
-          color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.7),
+          color: Theme.of(
+            context,
+          ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.7),
           margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -148,28 +151,18 @@ class _JournalPageState extends ConsumerState<JournalPage> {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     IconButton(
-                      icon: Icon(
-                        Icons.note,
-                        color:colorScheme.primary,
-                      ),
+                      icon: Icon(Icons.note, color: colorScheme.primary),
                       onPressed: () {
-                        ref.invalidate(journalNoteProvider);
-                        ref
-                            .read(journalNoteProvider.notifier)
-                            .updateId(journal.id);
+                        notifer.resetStateJournalExceptPortId();
+                        notifer.updateId(journal.id);
                         Navigator.pushNamed(context, '/view-note-journal-page');
                       },
                     ),
                     IconButton(
-                      icon: Icon(
-                        Icons.edit,
-                        color: colorScheme.secondary,
-                      ),
+                      icon: Icon(Icons.edit, color: colorScheme.secondary),
                       onPressed: () {
-                        ref.invalidate(journalNoteProvider);
-                        ref
-                            .read(journalNoteProvider.notifier)
-                            .updateId(journal.id);
+                        notifer.resetStateJournalExceptPortId();
+                        notifer.updateId(journal.id);
                         Navigator.pushNamed(context, '/add-journal-page');
                       },
                     ),
@@ -213,26 +206,24 @@ class _JournalPageState extends ConsumerState<JournalPage> {
 
               if (confirmed == true) {
                 // ลบจริง
-                ref.read(journalServiceProvider)
-                    .deleteJournal(journal.id)
-                    .then((result) {
-                  if (result > 0) {
-                    // ลบสำเร็จ
-                    ref.invalidate(journalListProvider);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Journal deleted successfully.'),
-                      ),
-                    );
-                  } else {
-                    // ลบไม่สำเร็จ
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Failed to delete journal.'),
-                      ),
-                    );
-                  }
-                });
+                ref.read(journalServiceProvider).deleteJournal(journal.id).then(
+                  (result) {
+                    if (result > 0) {
+                      // ลบสำเร็จ
+                      ref.invalidate(journalListProvider);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Journal deleted successfully.'),
+                        ),
+                      );
+                    } else {
+                      // ลบไม่สำเร็จ
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Failed to delete journal.')),
+                      );
+                    }
+                  },
+                );
                 print('Confirmed delete: ${journal.id}');
               }
             },

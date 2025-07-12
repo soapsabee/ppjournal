@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ppjournal/data/local/database.dart';
 import 'package:ppjournal/presentation/colors/colors.dart';
+import 'package:ppjournal/providers/journal_provider.dart';
 import 'package:ppjournal/providers/port_provider.dart';
 import '../../widgets/appbar_custom.dart';
 
@@ -231,8 +232,13 @@ class _HomePageState extends ConsumerState<HomePage> {
   Widget buildPortCard(BuildContext context, PortData port) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final notifier = ref.watch(journalNoteProvider.notifier);
     return GestureDetector(
-      onTap: () => Navigator.pushNamed(context, '/port-inside-page'),
+      onTap: (){ 
+        notifier.updatePortId(port.id);
+        // Navigate to the port inside page
+        Navigator.pushNamed(context, '/port-inside-page');
+      },
       child: Card(
         elevation: 4,
         color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.7),

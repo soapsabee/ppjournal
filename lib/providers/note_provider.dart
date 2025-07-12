@@ -3,11 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ppjournal/data/local/database.dart';
 import 'package:ppjournal/data/repositories/note_repository.dart';
 import 'package:ppjournal/services/note_service.dart';
-
-final dbProvider = Provider<AppDatabase>((ref) {
-  return AppDatabase();
-});
-
+import 'package:ppjournal/providers/open_database.dart';
 final noteServiceProvider = Provider<NoteService>((ref) {
   final db = ref.watch(dbProvider);
   return NoteService(NoteRepository(db));

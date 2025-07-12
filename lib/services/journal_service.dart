@@ -8,8 +8,8 @@ class JournalService {
   final JournalRepository journalRepository;
   JournalService(this.journalRepository);
 
-  Future<List<JournalFull>> getAllJournalsFull() async {
-    return await journalRepository.getAllJournalsFull();
+  Future<List<JournalFull>> getAllJournalsFull(int portId) async {
+    return await journalRepository.getAllJournalsFull(portId);
   }
 
   Future<List<JournalData>> getAllJournals() async {

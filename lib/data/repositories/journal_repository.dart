@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:ppjournal/data/models/dashboard_model.dart';
 import 'package:ppjournal/data/models/journal_model.dart';
 
 import '../local/database.dart';
@@ -7,9 +8,7 @@ class JournalRepository {
   final AppDatabase db;
   JournalRepository(this.db);
 
-  Future<List<JournalFull>> getAllJournalsFull() async {
-    final testSelect = db.select(db.journal);
-    print("Test Select: $testSelect");
+  Future<List<JournalFull>> getAllJournalsFull(int portId) async {
     final query = db.select(db.journal).join([
       leftOuterJoin(
         db.tradeSetup,
@@ -25,10 +24,9 @@ class JournalRepository {
         db.pricePattern,
         db.pricePattern.id.equalsExp(db.journal.pricePatternId),
       ),
-    ]);
+    ])..where(db.journal.portId.equals(portId));
 
     final results = await query.get();
-
     return results.map((row) {
       return JournalFull(
         journal: row.readTable(db.journal),

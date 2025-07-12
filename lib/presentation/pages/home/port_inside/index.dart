@@ -37,7 +37,7 @@ class _PortInsidePageState extends ConsumerState<PortInsidePage> {
           icon: const Icon(Icons.add, color: Colors.white),
           onPressed: () {
             // Implement functionality here
-            ref.invalidate(journalNoteProvider); // Reset state when adding a new journal
+            ref.read(journalNoteProvider.notifier).resetStateJournalExceptPortId(); // Reset state when adding a new journal
             Navigator.pushNamed(context, '/add-journal-page');
           },
             )
