@@ -80,6 +80,9 @@ class _AddJournalPageState extends ConsumerState<AddJournalPage> {
           );
           return;
         }
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Journal update successfully!')),
+        );
         ref.invalidate(journalByIdProvider(journalId));
       } else {
         // Insert new journal entry
@@ -90,13 +93,10 @@ class _AddJournalPageState extends ConsumerState<AddJournalPage> {
           );
           return;
         }
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Journal saved successfully!')),
+        );
       }
-
-      // Save the journal logic here
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Journal saved successfully!')),
-      );
-
       ref.invalidate(journalListProvider);
     }
   }
@@ -118,16 +118,15 @@ class _AddJournalPageState extends ConsumerState<AddJournalPage> {
     if (journalId != null) {
       // Load existing journal data if editing
       final journal = ref.watch(journalByIdProvider(journalId));
-      print("journalId: $journalId");
       journal.when(
         data: (data) {
           if (data != null && !_isInitialized) {
-            print("data1: ${data.journal.date}");
 
             // _tradeDateController.text =
             //     data.journal.date.toIso8601String().split('T')[0];
             // notifier.updateDate(data.journal.date);
             WidgetsBinding.instance.addPostFrameCallback((_) {
+
               notifier.updateDate(data.journal.date);
               notifier.updateSessionTime(data.journal.session);
               notifier.updateCurrencyPair(

@@ -2,6 +2,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ppjournal/data/local/database.dart';
 import 'package:ppjournal/data/models/dashboard_model.dart';
+import 'package:ppjournal/data/models/top_three_port_profit.dart';
 import 'package:ppjournal/data/models/top_three_win_model.dart';
 import 'package:ppjournal/data/repositories/dashboard_repository.dart';
 import 'package:ppjournal/providers/journal_provider.dart';
@@ -30,4 +31,9 @@ final topThreeWinsProvider = FutureProvider<List<TopThreeWinModel>>((ref) async 
     throw Exception("Port ID is not set, cannot fetch top three wins.");
   }
   return await dashboardService.getTopThreeWins(state.portId);
+});
+
+final topThreePortProfitsProvider = FutureProvider<List<TopThreePortProfit>>((ref) async {
+  final dashboardService = ref.watch(dashboardServiceProvider);
+  return await dashboardService.getTopThreePortProfits();
 });

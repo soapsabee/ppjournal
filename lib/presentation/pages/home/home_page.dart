@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ppjournal/data/local/database.dart';
 import 'package:ppjournal/presentation/colors/colors.dart';
+import 'package:ppjournal/providers/dashboard_provider.dart';
 import 'package:ppjournal/providers/journal_provider.dart';
 import 'package:ppjournal/providers/port_provider.dart';
 import '../../widgets/appbar_custom.dart';
@@ -128,6 +129,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   Widget buildRankingCard(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final topThreePortProit = ref.read(topThreePortProfitsProvider);
     return Card(
       color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.7),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -146,11 +148,19 @@ class _HomePageState extends ConsumerState<HomePage> {
               ),
             ),
             SizedBox(height: 16),
-            buildRankingRow(1, 'Port A', 1000),
-            SizedBox(height: 8),
-            buildRankingRow(2, 'Port B', 800),
-            SizedBox(height: 8),
-            buildRankingRow(3, 'Port C', 600),
+            topThreePortProit.when(
+              data:
+                  (ports) => Column(
+                    children: List.generate(3, (index) {
+                      final port = index < ports.length ? ports[index] : null;
+                      final portName = port?.portName ?? '-';
+                      final profit = port?.profit.toInt() ?? 0;
+                      return buildRankingRow(index + 1, portName, profit);
+                    }),
+                  ),
+              loading: () => Center(child: CircularProgressIndicator()),
+              error: (err, stack) => Text('Error: $err'),
+            ),
           ],
         ),
       ),
@@ -234,7 +244,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     final colorScheme = theme.colorScheme;
     final notifier = ref.watch(journalNoteProvider.notifier);
     return GestureDetector(
-      onTap: (){ 
+      onTap: () {
         notifier.updatePortId(port.id);
         // Navigate to the port inside page
         Navigator.pushNamed(context, '/port-inside-page');

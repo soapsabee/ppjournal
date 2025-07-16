@@ -34,8 +34,8 @@ class JournalNoteState {
   final double? rr;
   final double? fee;
   final DateTime? date;
-  final DateTime createdAt;
-  final String noteDetail;
+  final DateTime? createdAt;
+  final String? noteDetail;
   final XFile? beforeImage;
   final XFile? afterImage;
 

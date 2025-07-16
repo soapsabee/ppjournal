@@ -1,4 +1,5 @@
 import 'package:ppjournal/data/models/dashboard_model.dart';
+import 'package:ppjournal/data/models/top_three_port_profit.dart';
 import 'package:ppjournal/data/models/top_three_win_model.dart';
 import 'package:ppjournal/data/repositories/dashboard_repository.dart';
 
@@ -12,5 +13,9 @@ class DashboardService {
 
   Future<List<TopThreeWinModel>> getTopThreeWins(int portId) async {
     return await dashboardRepository.getTopThreeWins(portId);
+  }
+
+  Future<List<TopThreePortProfit>> getTopThreePortProfits() async {
+    return await dashboardRepository.getTopThreePortProfits();
   }
 }

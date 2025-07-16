@@ -1,6 +1,7 @@
 import 'package:ppjournal/data/local/database.dart';
 import 'package:ppjournal/data/models/dashboard_model.dart';
 import 'package:drift/drift.dart';
+import 'package:ppjournal/data/models/top_three_port_profit.dart';
 import 'package:ppjournal/data/models/top_three_win_model.dart';
 
 class DashboardRepository {
@@ -205,5 +206,39 @@ class DashboardRepository {
         winRate: ((e['winrate'] as double) * 100),
       );
     }).toList();
+  }
+
+  Future<List<TopThreePortProfit>> getTopThreePortProfits() async {
+    final result =
+        await (db.selectOnly(db.journal)
+              ..addColumns([
+                db.journal.portId,
+                db.journal.profit.sum(),
+                db.port.name,
+              ])
+              ..groupBy([db.journal.portId])
+              ..orderBy([
+                OrderingTerm.desc(db.journal.profit.sum()),
+              ])
+              ..limit(3))
+            .join([
+              innerJoin(
+                db.port,
+                db.port.id.equalsExp(db.journal.portId),
+              ),
+            ])
+            .get();
+        
+    final topPorts = result.map((row) {
+      final portName = row.read<String>(db.port.name)!;
+      final profit = row.read<double>(db.journal.profit.sum()) ?? 0.0;
+
+      return TopThreePortProfit(
+        portName: 'Port $portName', // Assuming port name is derived from ID
+        profit: profit,
+      );
+    }).toList();
+
+    return topPorts;
   }
 }

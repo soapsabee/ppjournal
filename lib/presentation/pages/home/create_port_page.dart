@@ -5,12 +5,24 @@ import 'package:ppjournal/data/local/database.dart';
 import 'package:ppjournal/providers/port_provider.dart';
 import '../../widgets/appbar_custom.dart';
 
-class CreatePortPage extends ConsumerWidget {
+class CreatePortPage extends ConsumerStatefulWidget {
+  @override
+  _CreatePortPageState createState() => _CreatePortPageState();
+}
+
+class _CreatePortPageState extends ConsumerState<CreatePortPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _portNameController = TextEditingController();
   final TextEditingController _portSizeController = TextEditingController();
   final TextEditingController _riskPerTradeController = TextEditingController();
+  double costPerTrade = 0;
 
+  @override
+  void initState() {
+    super.initState();
+   costPerTrade = 0;
+  }
+  
   void _onSubmit(BuildContext context, WidgetRef ref) {
     if (_formKey.currentState!.validate()) {
       // Handle form submission logic here
@@ -51,14 +63,29 @@ class CreatePortPage extends ConsumerWidget {
               SnackBar(content: Text('Failed to create portfolio: $error')),
             );
           });
-      print('Port Name: $portName');
-      print('Port Size: $portSize');
-      print('Risk per Trade: $riskPerTrade');
     }
   }
 
+ void calculatedCostPerTrade() {
+  final portSizeText = _portSizeController.text.trim();
+  final riskPerTradeText = _riskPerTradeController.text.trim();
+
+  final portSize = double.tryParse(portSizeText);
+  final riskPerTrade = double.tryParse(riskPerTradeText);
+
+  if (portSize != null && riskPerTrade != null) {
+    setState(() {
+    costPerTrade = portSize * riskPerTrade;      
+    });
+  } else {
+    setState(() {
+          costPerTrade = 0; // หรือ null ถ้าคุณใช้ nullable type      
+    });
+  }
+}
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(title: "Create Port", shouldShowLeading: true),
       body: Padding(
@@ -70,7 +97,10 @@ class CreatePortPage extends ConsumerWidget {
             children: [
               TextFormField(
                 controller: _portNameController,
-                decoration: InputDecoration(labelText: 'Port Name'),
+                decoration: InputDecoration(
+                  labelText: 'Port Name',
+                  border: const OutlineInputBorder(),
+                ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter a port name';
@@ -79,32 +109,12 @@ class CreatePortPage extends ConsumerWidget {
                 },
               ),
               SizedBox(height: 16),
-              TextFormField(
-                controller: _portSizeController,
-                decoration: InputDecoration(labelText: 'Port Size'),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a port size';
-                  }
-                  return null;
-                },
-              ),
+              _buildNumberField("Port Size", _portSizeController),
               SizedBox(height: 16),
-              TextFormField(
-                controller: _riskPerTradeController,
-                decoration: InputDecoration(labelText: 'Risk per Trade (%)'),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter the risk per trade';
-                  }
-                  return null;
-                },
-              ),
+              _buildNumberField("Risk per Trade (%)", _riskPerTradeController),
               SizedBox(height: 32),
               Text("Cost Per Trade (Port Size * Risk per Trade)"),
-              Text("= 0.0"),
+              Text("= ${costPerTrade}"),
               SizedBox(height: 32),
               Center(
                 child: ElevatedButton(
@@ -116,6 +126,28 @@ class CreatePortPage extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+
+  _buildNumberField<T>(String label, TextEditingController controller) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: TextInputType.number,
+      decoration: InputDecoration(
+        labelText: label,
+        border: const OutlineInputBorder(),
+      ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter $label';
+        }
+        final number = num.tryParse(value);
+        if (number == null) {
+          return 'Please enter a valid number for $label';
+        }
+        return null;
+      },
+      onChanged: (_) => calculatedCostPerTrade(),
     );
   }
 }

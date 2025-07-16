@@ -17,14 +17,14 @@ class NoteJournalPage extends ConsumerStatefulWidget {
 }
 
 class _NoteJournalPageState extends ConsumerState<NoteJournalPage> {
-  late final TextEditingController _noteController;
+  late final TextEditingController _noteController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _noteController = TextEditingController(
-      text: ref.read(journalNoteProvider).noteDetail,
-    );
+    // _noteController = TextEditingController(
+    //   text: ref.read(journalNoteProvider).noteDetail,
+    // );
   }
 
   @override
@@ -66,8 +66,6 @@ class _NoteJournalPageState extends ConsumerState<NoteJournalPage> {
     // Implement the logic to insert the note into the database
     // This is where you would typically call your service or repository
     // to save the note along with the images.
-    String noteText = _noteController.text;
-    notifier.updateNoteDetail(noteText);
     drift.Uint8List? beforeBytes;
     drift.Uint8List? afterBytes;
     if (state.beforeImage != null) {
@@ -80,6 +78,9 @@ class _NoteJournalPageState extends ConsumerState<NoteJournalPage> {
     if (journalId == null) {
       final insert = await ref.read(journalInsertProvider.future);
       notifier.updateId(insert);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Journal saved successfully!')),
+      );
     } else {
       print("testupdate: ${state.noteDetail}");
       final update = await ref.read(journalUpdateProvider.future);
@@ -89,11 +90,12 @@ class _NoteJournalPageState extends ConsumerState<NoteJournalPage> {
         );
         return;
       }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Journal update successfully!')),
+      );
       ref.invalidate(journalByIdProvider(journalId));
     }
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Journal saved successfully!')),
-    );
+
     ref.invalidate(journalListProvider);
 
     // if (noteId == null) {
@@ -136,21 +138,15 @@ class _NoteJournalPageState extends ConsumerState<NoteJournalPage> {
     if (routeName == "/view-note-journal-page") {
       _isView = true;
     }
-    print("routeName: $routeName");
     // If you need to debug, use debugPrint or a logging framework, and check for keys if state is a Map.
     // Example:
-
-    print('Journal ID: $journalId');
-
     if (journalId != null) {
       final journal = ref.watch(journalByIdProvider(journalId));
       journal.when(
         data: (data) {
-          print("data2: ${data?.journal.noteDetail}");
           if (data != null && !_isInitialized) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              _noteController.text = data.journal.noteDetail ?? '';
-              // notifier.updateNoteDetail(data.journal.noteDetail ?? '');
+              notifier.updateNoteDetail(data.journal.noteDetail ?? '');
               notifier.updateBeforeImage(
                 data.journal.beforePicture != null
                     ? XFile(
@@ -210,14 +206,11 @@ class _NoteJournalPageState extends ConsumerState<NoteJournalPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            TextFormField(
+            buildNoteInputField(
               controller: _noteController,
+              value: state.noteDetail ?? '',
               readOnly: _isView,
-              maxLines: 5,
-              decoration: InputDecoration(
-                labelText: 'Write your note',
-                border: OutlineInputBorder(),
-              ),
+              onChanged: (val) => notifier.updateNoteDetail(val),
             ),
             SizedBox(height: 20),
             Text('Before Image:'),
@@ -269,6 +262,26 @@ class _NoteJournalPageState extends ConsumerState<NoteJournalPage> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget buildNoteInputField({
+    required TextEditingController controller,
+    required String value,
+    required bool readOnly,
+    required void Function(String) onChanged,
+  }) {
+    controller.text = value;
+
+    return TextFormField(
+      controller: controller,
+      readOnly: readOnly,
+      maxLines: 5,
+      decoration: const InputDecoration(
+        labelText: 'Write your note',
+        border: OutlineInputBorder(),
+      ),
+      onChanged: onChanged,
     );
   }
 }

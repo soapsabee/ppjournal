@@ -77,9 +77,22 @@ final journalUpdateProvider = FutureProvider<bool>((ref) async {
   if (state.id == null) {
     throw Exception("Journal ID is null, cannot update.");
   }
+
+  final beforeImagePath = state.beforeImage?.path;
+  var beforeImg = null;
+  if (beforeImagePath != null) {
+    beforeImg = await File(beforeImagePath).readAsBytes();
+  }
+
+  final afterImagePath = state.afterImage?.path;
+  var afterImg = null;
+  if (afterImagePath != null) {
+    afterImg = await File(afterImagePath).readAsBytes();
+  }
+
   final journalService = ref.watch(journalServiceProvider);
   final updatedRows = await journalService.updateJournal(
-    state.id!,
+    state.id ?? 0,
     JournalCompanion(
       portId: Value(state.portId),
       session: Value(state.sessionTime),
@@ -96,14 +109,8 @@ final journalUpdateProvider = FutureProvider<bool>((ref) async {
       profit: Value(state.profit),
       date: Value(state.date),
       noteDetail: Value(state.noteDetail),
-      beforePicture:
-          state.beforeImage != null
-              ? Value(await File(state.beforeImage!.path).readAsBytes())
-              : const Value(null),
-      afterPicture:
-          state.afterImage != null
-              ? Value(await File(state.afterImage!.path).readAsBytes())
-              : const Value(null),
+      beforePicture:Value(beforeImg),
+      afterPicture:Value(afterImg),
       updatedAt: Value(DateTime.now()),
     ),
   );
